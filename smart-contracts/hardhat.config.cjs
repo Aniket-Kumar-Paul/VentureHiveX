@@ -1,5 +1,8 @@
+require('dotenv').config();
 require("@nomicfoundation/hardhat-ethers");
 // require("@nomicfoundation/hardhat-toolbox");
+
+const { SEPOLIA_RPC_URL, PRIVATE_KEY } = process.env;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -16,8 +19,8 @@ module.exports = {
   networks: {
     hardhat: {},
     sepolia: {
-      url: "https://ethereum-sepolia.publicnode.com",
-      accounts: []
+      url: SEPOLIA_RPC_URL || "https://ethereum-sepolia.publicnode.com",
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : []
     }
   },
   paths: {
