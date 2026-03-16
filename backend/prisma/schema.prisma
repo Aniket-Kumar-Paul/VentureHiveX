@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Configuration {
+  key       String   @id
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  wallet_address String    @id @unique
+  role           String // 'investor' or 'business'
+  name           String?
+  gender         String?
+  dob            DateTime?
+  email          String?
+  description    String?
+  company_name   String?
+  company_url    String?
+
+  campaigns   Campaign[]
+  investments Investor[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Campaign {
+  campaign_id    String @id // Matches smart contract ID
+  wallet_address String // Creator FK
+  creator        User   @relation(fields: [wallet_address], references: [wallet_address])
+
+  title             String
+  thumbnail         String? // IPFS CID or URL
+  video_url         String?
+  short_description String?
+  long_description  String?
+  category          String?
+  website           String?
+
+  status String @default("UPCOMING") // UPCOMING, ACTIVE, FUNDED, FAILED
+
+  goalAmount       String // Storing as String to prevent precision loss for Wei/Eth values
+  startTime        DateTime
+  endTime          DateTime
+  totalTokenSupply String
+  mintedSupply     String   @default("0")
+  pricePerToken    String
+  amountRaised     String   @default("0")
+
+  tokenName    String
+  tokenSymbol  String
+  tokenAddress String? // Deployed ERC20 address
+
+  investments Investor[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Investor {
+  wallet_address String
+  user           User   @relation(fields: [wallet_address], references: [wallet_address])
+
+  campaign_id String
+  campaign    Campaign @relation(fields: [campaign_id], references: [campaign_id])
+
+  amount_invested  String // Wei/Eth amount
+  tokens_purchased String // Token amount
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([wallet_address, campaign_id])
+}
