@@ -3,7 +3,7 @@ import { PinataSDK } from 'pinata-web3';
 import fs from 'fs';
 
 const pinata = new PinataSDK({
-  pinataJwt: process.env.PINATA_JWT_SECRET, // Make sure the user provides a Pinata JWT instead of Key/Secret
+  pinataJwt: process.env.PINATA_JWT_SECRET,
   pinataGateway: "gateway.pinata.cloud"
 });
 

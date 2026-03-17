@@ -37,7 +37,6 @@ export const startIndexer = () => {
     
     try {
       // Fetch full details directly from the contract to ensure 100% sync
-      // Depends on how getCampaign is structured in your Solidity
       const campaignData = await factoryContract.getCampaign(campaignId);
 
       // We might need to make sure the user exists first as creators are foreign keys
