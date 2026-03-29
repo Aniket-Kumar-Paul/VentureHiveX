@@ -27,7 +27,7 @@ export const uploadFile = async (req: Request, res: Response): Promise<void> => 
     res.json({
       success: true,
       ipfsHash: upload.IpfsHash,
-      gatewayUrl: `https://${pinata.config?.pinataGateway}/ipfs/${upload.IpfsHash}`
+      gatewayUrl: `https://${pinata.config?.pinataGateway?.replace(/^https?:\/\//, '')}/ipfs/${upload.IpfsHash}`
     });
   } catch (error) {
     console.error('Error uploading file to Pinata:', error);
@@ -37,7 +37,7 @@ export const uploadFile = async (req: Request, res: Response): Promise<void> => 
 
 export const uploadMetadata = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { title, description, image, attributes } = req.body;
+    const { title, description, thumbnail, video, category, website, attributes } = req.body;
 
     if (!title || !description) {
       res.status(400).json({ error: 'Title and description are required' });
@@ -45,9 +45,12 @@ export const uploadMetadata = async (req: Request, res: Response): Promise<void>
     }
 
     const metadata = {
-      name: title,
+      title,
       description,
-      image,
+      thumbnail,
+      video,
+      category,
+      website,
       attributes: attributes || []
     };
 
@@ -56,7 +59,7 @@ export const uploadMetadata = async (req: Request, res: Response): Promise<void>
     res.json({
       success: true,
       ipfsHash: upload.IpfsHash,
-      gatewayUrl: `https://${pinata.config?.pinataGateway}/ipfs/${upload.IpfsHash}`
+      gatewayUrl: `https://${pinata.config?.pinataGateway?.replace(/^https?:\/\//, '')}/ipfs/${upload.IpfsHash}`
     });
   } catch (error) {
     console.error('Error uploading metadata to Pinata:', error);

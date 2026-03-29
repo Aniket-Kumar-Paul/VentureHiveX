@@ -1,10 +1,8 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/prismaClient';
 import { generateToken } from '../middlewares/authMiddleware';
 import { generateNonce, getStoredNonceMessage, clearNonce } from '../services/nonceService';
 import { ethers } from 'ethers';
-
-const prisma = new PrismaClient();
 
 export const getNonce = async (req: Request, res: Response): Promise<void> => {
   const { walletAddress } = req.query;

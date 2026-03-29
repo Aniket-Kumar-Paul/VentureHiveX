@@ -1,3 +1,4 @@
+require("dotenv").config({ path: '../backend/.env' });
 const hre = require("hardhat");
 
 async function sleep(ms) {
@@ -28,27 +29,23 @@ async function main() {
   console.log("Investor1:", investor1.address);
   console.log("Investor2:", investor2.address);
 
-  // 1. Deploy Factory
-  const CampaignFactory = await hre.ethers.getContractFactory("CampaignFactory");
-  const factory = await CampaignFactory.deploy();
-  await factory.waitForDeployment();
-  const factoryAddress = await factory.getAddress();
-  console.log("\n[1] Factory Deployed at:", factoryAddress);
-
-  if (!isLocal) {
-    console.log("Waiting for block confirmations...");
-    await factory.deploymentTransaction().wait(2);
-    console.log("Factory confirmed!");
-  }
+  // 1. Use existing Factory
+  const factoryAddress = process.env.FACTORY_ADDRESS;
+  const factory = await hre.ethers.getContractAt("CampaignFactory", factoryAddress);
+  console.log("\n[1] Using Factory at:", factoryAddress);
 
   // 2. Create Campaign
   // Goal amount 0.001 ETH makes it cheap enough for testnets
   const goalAmount = hre.ethers.parseEther("0.001");
   const totalTokenSupply = hre.ethers.parseEther("10000"); // 10,000 Tokens
   
-  const currentBlock = await hre.ethers.provider.getBlock("latest");
+  let currentBlock = await hre.ethers.provider.getBlock("latest");
+  if (!currentBlock) {
+    await hre.network.provider.send("evm_mine");
+    currentBlock = await hre.ethers.provider.getBlock("latest");
+  }
   // If local, start in 10s, if testnet start in 60s so we can wait naturally for 1-3 blocks
-  const delaySeconds = isLocal ? 10 : 60;
+  const delaySeconds = 60;
   const startTime = currentBlock.timestamp + delaySeconds; 
   const endTime = startTime + 3600; // End in 1 hour
 

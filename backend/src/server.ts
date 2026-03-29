@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
-import { PrismaClient } from '@prisma/client';
+import prisma from './config/prismaClient';
 
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
@@ -16,7 +16,6 @@ dotenv.config();
 
 const app = express();
 const port = parseInt(process.env.SERVER_PORT || '8000', 10);
-const prisma = new PrismaClient();
 
 // Middleware
 app.use(helmet());
