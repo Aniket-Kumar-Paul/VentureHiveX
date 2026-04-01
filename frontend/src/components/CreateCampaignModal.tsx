@@ -1,152 +1,232 @@
 "use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 import { useState } from "react";
-import { getSigner, getFactoryContract } from "@/lib/web3";
-import { ethers } from "ethers";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { motion, AnimatePresence } from "framer-motion";
+import { useMockData } from "@/lib/MockProvider";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
+const steps = ["Content", "Funding", "Token", "Review"];
+
 export function CreateCampaignModal({ isOpen, onClose }: Props) {
-  const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    goal: "",
-    durationDays: "30",
-    tokenName: "",
-    tokenSymbol: "",
-  });
+  const { currentUser, createCampaign, campaigns } = useMockData();
+  const [step, setStep] = useState(0);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  // Form State
+  const [title, setTitle] = useState("");
+  const [shortDesc, setShortDesc] = useState("");
+  const [longDesc, setLongDesc] = useState("");
+  const [category, setCategory] = useState("Technology");
+  const [thumbnail, setThumbnail] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [website, setWebsite] = useState("");
 
-  const handleLaunch = async () => {
-    setLoading(true);
-    try {
-      // 1. Upload Metadata to IPFS Backend API
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-      
-      /* In a real scenario we need a token for this endpoint since it's auth-protected. 
-         For testing, assuming either auth is bypassed in dev or we provide a mock token. */
-      const res = await fetch(`${apiUrl}/ipfs/metadata`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          title: formData.title,
-          description: formData.description,
-          thumbnail: "ipfs://mock",
-          video: "ipfs://mock",
-          category: "Technology",
-          website: "https://example.com"
-        })
-      });
+  const [goalAmount, setGoalAmount] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [totalTokenSupply, setTotalTokenSupply] = useState("");
+  
+  const [tokenName, setTokenName] = useState("");
+  const [tokenSymbol, setTokenSymbol] = useState("");
+  const [tokenError, setTokenError] = useState("");
 
-      let metadataCID = "mockCID";
-      if (res.ok) {
-        const data = await res.json();
-        metadataCID = data.ipfsHash || "mockCID";
-      }
-
-      // 2. Call Smart Contract
-      const signer = await getSigner();
-      const factory = await getFactoryContract(signer);
-      
-      const goalWei = ethers.parseEther(formData.goal || "0");
-      const durationSeconds = parseInt(formData.durationDays) * 24 * 60 * 60;
-      
-      console.log("Creating campaign on-chain...");
-      const tx = await factory.createCampaign(
-        goalWei,
-        durationSeconds,
-        metadataCID,
-        formData.tokenName,
-        formData.tokenSymbol
-      );
-      
-      await tx.wait();
-      console.log("Campaign created successfully!");
-      
-      onClose();
-    } catch (err) {
-      console.error("Error creating campaign:", err);
-      alert("Failed to create campaign. See console for details.");
-    } finally {
-      setLoading(false);
+  const handleSubmit = async () => {
+    if (!currentUser) return;
+    
+    // Check token symbol uniqueness dummy
+    if (campaigns.some(c => c.tokenSymbol.toLowerCase() === tokenSymbol.toLowerCase())) {
+      setTokenError("Token symbol already exists.");
+      setStep(2);
+      return;
     }
+
+    const pricePerToken = parseFloat(goalAmount) / parseFloat(totalTokenSupply);
+    
+    createCampaign({
+      id: `camp-${Date.now()}`,
+      creatorAddress: currentUser.address,
+      title,
+      shortDescription: shortDesc,
+      longDescription: longDesc,
+      category,
+      website,
+      thumbnailUrl: thumbnail || "https://images.unsplash.com/photo-1557682250-33bd709cbe85",
+      videoUrl,
+      goalAmount: parseFloat(goalAmount),
+      totalTokenSupply: parseFloat(totalTokenSupply),
+      pricePerToken,
+      startDate: new Date(startDate).toISOString(),
+      endDate: new Date(endDate).toISOString(),
+      status: "Upcoming",
+      tokenName,
+      tokenSymbol,
+      tokenAddress: `0xMockToken${Date.now()}`,
+      amountRaised: 0,
+    });
+    
+    // Reset and close
+    setStep(0);
+    onClose();
   };
+
+  const nextStep = () => {
+    if (step === 2) {
+      if (campaigns.some(c => c.tokenSymbol.toLowerCase() === tokenSymbol.toLowerCase())) {
+        setTokenError("Token symbol already exists.");
+        return;
+      }
+      setTokenError("");
+    }
+    setStep((s) => Math.min(steps.length - 1, s + 1));
+  };
+  const prevStep = () => setStep((s) => Math.max(0, s - 1));
 
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
-      <DialogContent className="sm:max-w-xl bg-zinc-950/80 backdrop-blur-xl border-white/10 text-foreground">
+      <DialogContent className="sm:max-w-2xl bg-background/95 backdrop-blur-xl border-border max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold tracking-tight text-white">
-            Launch New Startup Campaign
-          </DialogTitle>
+          <DialogTitle className="text-2xl font-bold tracking-tight">Create Campaign</DialogTitle>
+          <DialogDescription>
+            Launch your project and bring it to life on VentureHiveX.
+          </DialogDescription>
         </DialogHeader>
-        
-        <div className="flex flex-col gap-6 py-4">
-          
-          {step === 1 && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title" className="text-white/80">Campaign Title</Label>
-                <Input id="title" name="title" value={formData.title} onChange={handleChange} className="bg-zinc-900 border-white/10" placeholder="e.g. NeoTrade Protocol" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description" className="text-white/80">Description</Label>
-                <textarea 
-                  id="description" name="description" value={formData.description} onChange={handleChange}
-                  className="w-full min-h-24 px-3 py-2 rounded-md bg-zinc-900 border border-white/10 outline-none focus:border-primary text-sm"
-                  placeholder="Describe your startup..." 
-                />
-              </div>
-              <Button onClick={() => setStep(2)} className="w-full mt-4">Next Step</Button>
+
+        {/* Stepper */}
+        <div className="flex gap-2 my-4">
+          {steps.map((s, i) => (
+            <div key={s} className="flex-1 flex flex-col gap-2">
+              <div className={`h-1.5 rounded-full transition-colors ${i <= step ? "bg-primary" : "bg-muted"}`} />
+              <span className={`text-xs font-medium pl-1 ${i <= step ? "text-foreground" : "text-muted-foreground"}`}>{s}</span>
             </div>
+          ))}
+        </div>
+
+        <div className="min-h-[400px] relative overflow-hidden px-1">
+          <AnimatePresence mode="wait">
+            {step === 0 && (
+              <motion.div key="step0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-4 py-2">
+                <div className="space-y-2">
+                  <Label>Title *</Label>
+                  <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="My Awesome Project" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Category</Label>
+                    <select className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={category} onChange={e => setCategory(e.target.value)}>
+                      <option value="Technology">Technology</option>
+                      <option value="Gaming">Gaming</option>
+                      <option value="Finance">Finance</option>
+                      <option value="Art">Art</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Website</Label>
+                    <Input type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://..." />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Short Description *</Label>
+                  <Input value={shortDesc} onChange={e => setShortDesc(e.target.value)} placeholder="One-liner about the project" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Long Description</Label>
+                  <textarea className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={longDesc} onChange={e => setLongDesc(e.target.value)} placeholder="Detailed pitch..." />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Thumbnail URL</Label>
+                    <Input type="url" value={thumbnail} onChange={e => setThumbnail(e.target.value)} placeholder="https://image..." />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Video URL</Label>
+                    <Input type="url" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://youtube.com/..." />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 1 && (
+              <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-5 py-2">
+                <div className="space-y-2">
+                  <Label>Goal Amount ($) *</Label>
+                  <Input type="number" required value={goalAmount} onChange={e => setGoalAmount(e.target.value)} placeholder="100000" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Start Date & Time</Label>
+                    <Input type="datetime-local" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>End Date & Time</Label>
+                    <Input type="datetime-local" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Total Token Supply *</Label>
+                  <Input type="number" required value={totalTokenSupply} onChange={e => setTotalTokenSupply(e.target.value)} placeholder="1000000" />
+                  <p className="text-xs text-muted-foreground mt-2 px-1">
+                    Auto-calculated Price Per Token: 
+                    <strong className="text-primary ml-1">
+                      ${(parseFloat(goalAmount || "0") / parseFloat(totalTokenSupply || "1") || 0).toFixed(4)}
+                    </strong>
+                  </p>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 2 && (
+              <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-4 py-2">
+                {tokenError && <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">{tokenError}</p>}
+                <div className="space-y-2">
+                  <Label>Token Name *</Label>
+                  <Input value={tokenName} onChange={e => setTokenName(e.target.value)} placeholder="e.g. EcoToken" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Token Symbol *</Label>
+                  <Input value={tokenSymbol} onChange={e => setTokenSymbol(e.target.value)} placeholder="e.g. ECO" maxLength={6} className="uppercase" />
+                </div>
+              </motion.div>
+            )}
+
+            {step === 3 && (
+              <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-6 py-2">
+                <div className="bg-muted p-5 rounded-xl border border-border text-sm space-y-4">
+                  <h3 className="text-lg font-bold pb-2 border-b border-border/50">Campaign Summary</h3>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                    <div><span className="text-muted-foreground">Title:</span> <span className="font-semibold">{title}</span></div>
+                    <div><span className="text-muted-foreground">Category:</span> <span className="font-semibold">{category}</span></div>
+                    <div><span className="text-muted-foreground">Goal:</span> <span className="font-semibold">${parseFloat(goalAmount||"0").toLocaleString()}</span></div>
+                    <div><span className="text-muted-foreground">Supply:</span> <span className="font-semibold">{parseFloat(totalTokenSupply||"0").toLocaleString()}</span></div>
+                    <div><span className="text-muted-foreground">Token:</span> <span className="font-semibold">{tokenName} ({tokenSymbol})</span></div>
+                    <div><span className="text-muted-foreground">Price/Token:</span> <span className="font-semibold text-primary">${(parseFloat(goalAmount||"0") / parseFloat(totalTokenSupply||"1") || 0).toFixed(4)}</span></div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <div className="flex justify-between pt-4 border-t border-border mt-2">
+          <Button variant="outline" onClick={prevStep} disabled={step === 0}>
+            Back
+          </Button>
+          {step < steps.length - 1 ? (
+            <Button onClick={nextStep} disabled={!title && step === 0}>
+              Next Step
+            </Button>
+          ) : (
+            <Button onClick={handleSubmit} className="shadow-[0_0_15px_rgba(var(--primary),0.3)]">
+              Publish Campaign
+            </Button>
           )}
-
-          {step === 2 && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="goal" className="text-white/80">Goal (ETH)</Label>
-                  <Input id="goal" name="goal" type="number" value={formData.goal} onChange={handleChange} className="bg-zinc-900 border-white/10" placeholder="e.g. 100" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="durationDays" className="text-white/80">Duration (Days)</Label>
-                  <Input id="durationDays" name="durationDays" type="number" value={formData.durationDays} onChange={handleChange} className="bg-zinc-900 border-white/10" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="tokenName" className="text-white/80">Token Name</Label>
-                  <Input id="tokenName" name="tokenName" value={formData.tokenName} onChange={handleChange} className="bg-zinc-900 border-white/10" placeholder="e.g. NeoTrade" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tokenSymbol" className="text-white/80">Token Symbol</Label>
-                  <Input id="tokenSymbol" name="tokenSymbol" value={formData.tokenSymbol} onChange={handleChange} className="bg-zinc-900 border-white/10" placeholder="e.g. NEO" />
-                </div>
-              </div>
-
-              <div className="flex gap-4 mt-4">
-                <Button variant="outline" onClick={() => setStep(1)} className="w-1/3 bg-transparent border-white/10">Back</Button>
-                <Button onClick={handleLaunch} disabled={loading} className="w-2/3 shadow-[0_0_15px_rgba(124,58,237,0.3)]">
-                  {loading ? "Deploying..." : "Launch Campaign"}
-                </Button>
-              </div>
-            </div>
-          )}
-
         </div>
       </DialogContent>
     </Dialog>

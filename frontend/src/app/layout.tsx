@@ -20,6 +20,9 @@ export const metadata: Metadata = {
 };
 
 import { Navbar } from "@/components/Navbar";
+import { ThemeProvider } from "@/components/theme-provider";
+import { MockProvider } from "@/lib/MockProvider";
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -27,15 +30,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background relative overflow-x-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground relative overflow-x-hidden`}
       >
-        <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background"></div>
-        <Navbar />
-        <main className="relative z-0 pt-8 pb-16">
-          {children}
-        </main>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <MockProvider>
+            <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background"></div>
+            <Navbar />
+            <main className="relative z-0 pt-8 pb-16">
+              {children}
+            </main>
+            <Toaster richColors position="top-right" />
+          </MockProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

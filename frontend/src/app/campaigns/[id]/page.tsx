@@ -1,116 +1,200 @@
 "use client";
 
-import Link from "next/link";
-import { GlassCard } from "@/components/ui/glass-card";
+import { useMockData } from "@/lib/MockProvider";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState, useEffect } from "react";
+import { BuyTokensModal } from "@/components/modals/BuyTokensModal";
+import { EditCampaignModal } from "@/components/modals/EditCampaignModal";
+import { toast } from "sonner";
+import { motion } from "framer-motion";
 
-export default function SingleCampaignPage({ params }: { params: { id: string } }) {
-  // Mock data for UI
-  const campaign = {
-    title: "NeoTrade Protocol",
-    category: "DeFi",
-    website: "https://neotrade.io",
-    longDesc: "A decentralized dark pool protocol aiming to bring institutional privacy algorithms onto the public ledger. By using Zero-Knowledge proofs, NeoTrade allows massive liquidity orders to be executed without causing slippage or front-running.",
-    price: "0.05 ETH",
-    raised: 45,
-    goal: 100,
-    supply: "10,000,000 NEO",
-    timeline: "Ends in 14 Days",
-    tokenSymbol: "NEO"
-  };
+export default function SingleCampaignPage() {
+  const params = useParams();
+  const router = useRouter();
+  const { campaigns, currentUser } = useMockData();
+  const id = params?.id as string;
+  const campaign = campaigns.find((c) => c.id === id);
 
-  const progressPercent = (campaign.raised / campaign.goal) * 100;
+  const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    if (campaign && campaign.status === "Upcoming") {
+      const interval = setInterval(() => {
+        const diff = new Date(campaign.startDate).getTime() - Date.now();
+        if (diff <= 0) {
+          setTimeLeft("Started!");
+          clearInterval(interval);
+        } else {
+          const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+          const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+          const m = Math.floor((diff / 1000 / 60) % 60);
+          setTimeLeft(`${d}d ${h}h ${m}m`);
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [campaign]);
+
+  if (!campaign) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <h2 className="text-2xl font-bold">Campaign not found</h2>
+        <Button variant="link" onClick={() => router.push("/campaigns")}>Go back to campaigns</Button>
+      </div>
+    );
+  }
+
+  const progress = Math.min(100, Math.round((campaign.amountRaised / campaign.goalAmount) * 100));
+  const isCreator = currentUser?.address === campaign.creatorAddress;
+  const isInvestor = currentUser?.role === "Investor";
+
+  const handleRefund = () => toast.success("Refunding tokens via smart contract... (Mocked)");
+  const handleWithdraw = () => toast.success("Withdrawing funds via smart contract... (Mocked)");
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/campaigns" className="hover:text-foreground transition-colors">Campaigns</Link>
-        <span>/</span>
-        <span className="text-foreground">{campaign.title}</span>
-      </div>
-
-      <div className="flex flex-col lg:flex-row gap-8">
+    <div className="container mx-auto px-4 py-8">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col lg:flex-row gap-8">
         
-        {/* Right Side: Main Details (Now on left visually per standard layouts, but doc said RIGHT Side: Title... LEFT Side: Panel. Let's do it exactly as doc asked, or standard left-main right-sidebar) */}
-        {/* Per doc: Right side = content, Left side = panel. We'll render content first for mobile, but use flex-row-reverse for desktop to put panel on left? No, standard is Main on Left, Panel on Right. Doc said "RIGHT Side: Campaign Title... LEFT Side: Glassy panel". Okay, I'll put Panel on Left. */}
-        
-        {/* LEFT SIDE: Investment Panel */}
+        {/* Left Section (Smaller): Stats and Actions */}
         <div className="lg:w-1/3 order-2 lg:order-1 flex flex-col gap-6">
-          <GlassCard className="p-6 sticky top-24">
-            <h3 className="text-xl font-semibold mb-4 border-b border-white/5 pb-4">Investment Summary</h3>
+          <div className="bg-card border border-border rounded-3xl p-6 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-purple-500" />
+            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-4">Investment Goal</h3>
+            <div className="text-4xl font-extrabold tracking-tight">${campaign.goalAmount.toLocaleString()}</div>
             
-            <div className="mb-6">
-              <div className="flex justify-between items-end mb-2">
-                <span className="text-3xl font-bold text-primary">{campaign.raised} ETH</span>
-                <span className="text-sm text-muted-foreground">of {campaign.goal} ETH</span>
+            <div className="mt-6 space-y-2">
+              <div className="flex justify-between text-sm font-semibold">
+                <span className="text-primary">${campaign.amountRaised.toLocaleString()} Raised</span>
+                <span>{progress}%</span>
               </div>
-              <Progress value={progressPercent} className="h-2 bg-zinc-900 border border-white/5" />
-            </div>
-
-            <div className="space-y-4 text-sm mb-6">
-              <div className="flex justify-between border-b border-white/5 pb-2">
-                <span className="text-muted-foreground">Token Price</span>
-                <span className="font-medium">{campaign.price}</span>
-              </div>
-              <div className="flex justify-between border-b border-white/5 pb-2">
-                <span className="text-muted-foreground">Total Supply</span>
-                <span className="font-medium">{campaign.supply}</span>
-              </div>
-              <div className="flex justify-between border-b border-white/5 pb-2">
-                <span className="text-muted-foreground">Timeline</span>
-                <span className="font-medium text-primary">{campaign.timeline}</span>
+              <div className="h-3 w-full rounded-full bg-secondary overflow-hidden">
+                <div 
+                  className="h-full bg-primary bg-gradient-to-r from-primary to-purple-500 transition-all duration-1000 ease-out"
+                  style={{ width: `${progress}%` }}
+                />
               </div>
             </div>
 
-            <Button size="lg" className="w-full text-base font-semibold shadow-[0_0_20px_rgba(124,58,237,0.3)]">
-              Buy Tokens
-            </Button>
-            <p className="text-center text-xs text-muted-foreground mt-3">Requires connected MetaMask wallet</p>
-          </GlassCard>
+            <div className="mt-8 space-y-3 text-sm">
+              <div className="flex justify-between py-2 border-b border-border/50">
+                <span className="text-muted-foreground">Token Symbol</span>
+                <span className="font-semibold">{campaign.tokenSymbol}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-border/50">
+                <span className="text-muted-foreground">Price Per Token</span>
+                <span className="font-semibold text-primary">${campaign.pricePerToken.toFixed(4)}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-border/50">
+                <span className="text-muted-foreground">Status</span>
+                <span className="font-semibold">{campaign.status}</span>
+              </div>
+            </div>
+
+            {/* ACTION BUTTONS */}
+            <div className="mt-8">
+              {!currentUser ? (
+                <div className="p-4 bg-muted/50 rounded-xl text-center text-sm border border-border">
+                  Connect your wallet to participate.
+                </div>
+              ) : isInvestor ? (
+                <div className="flex flex-col gap-3">
+                  {campaign.status === "Upcoming" && (
+                    <Button disabled className="w-full" size="lg">Starts in: {timeLeft}</Button>
+                  )}
+                  {campaign.status === "Active" && (
+                    <Button onClick={() => setIsBuyModalOpen(true)} className="w-full shadow-[0_0_20px_rgba(var(--primary),0.4)] hover:scale-[1.02] transition-transform" size="lg">
+                      Buy Tokens
+                    </Button>
+                  )}
+                  {campaign.status === "Funded" && (
+                    <div className="text-center p-3 animate-pulse text-green-500 font-bold border border-green-500/20 bg-green-500/10 rounded-xl">
+                      🎉 Fully Funded!
+                    </div>
+                  )}
+                  {campaign.status === "Failed" && (
+                    <Button variant="destructive" onClick={handleRefund} className="w-full" size="lg">
+                      Refund Tokens
+                    </Button>
+                  )}
+                </div>
+              ) : isCreator ? (
+                <div className="flex flex-col gap-3">
+                  {campaign.status === "Upcoming" && (
+                    <Button onClick={() => setIsEditModalOpen(true)} variant="outline" className="w-full" size="lg">Edit Campaign</Button>
+                  )}
+                  {campaign.status === "Active" && (
+                    <div className="text-center p-3 text-primary font-bold border border-primary/20 bg-primary/10 rounded-xl">
+                      Campaign is currently active.
+                    </div>
+                  )}
+                  {campaign.status === "Funded" && (
+                    <Button onClick={handleWithdraw} className="w-full bg-green-600 hover:bg-green-700 text-white" size="lg">
+                      Withdraw Funds (Smart Contract)
+                    </Button>
+                  )}
+                  {campaign.status === "Failed" && (
+                    <div className="text-center p-3 text-red-500 font-bold border border-red-500/20 bg-red-500/10 rounded-xl">
+                      Campaign failed to reach goal.
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center p-3 text-muted-foreground font-medium border border-border bg-muted/30 rounded-xl">
+                  You are viewing as a Business account. (Not Creator)
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* RIGHT SIDE: Content */}
-        <div className="lg:w-2/3 order-1 lg:order-2 flex flex-col gap-6">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight">{campaign.title}</h1>
-          
-          <div className="flex gap-4 items-center flex-wrap">
-            <span className="inline-flex items-center rounded-md border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+        {/* Right Section (Bigger): Details */}
+        <div className="lg:w-2/3 order-1 lg:order-2 flex flex-col gap-8">
+          <div>
+            <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold tracking-wide mb-3">
               {campaign.category}
             </span>
-            <a href={campaign.website} target="_blank" rel="noreferrer" className="text-sm text-muted-foreground hover:text-white underline underline-offset-4">
-              {campaign.website}
-            </a>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tighter mb-4">{campaign.title}</h1>
+            <p className="text-xl text-muted-foreground leading-relaxed">
+              {campaign.shortDescription}
+            </p>
           </div>
 
-          <div className="w-full aspect-video bg-zinc-900 border border-white/10 rounded-xl overflow-hidden relative flex items-center justify-center">
-            {/* Play button generic placeholder */}
-            <div className="size-16 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md cursor-pointer hover:bg-white/20 transition-colors">
-              <div className="w-0 h-0 border-t-8 border-t-transparent border-l-[14px] border-l-white border-b-8 border-b-transparent ml-1"></div>
+          <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black/80 border border-border relative flex items-center justify-center group shadow-2xl">
+            {campaign.videoUrl ? (
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <div className="size-16 rounded-full bg-primary/90 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-[0_0_30px_rgba(124,58,237,0.6)]">
+                  <div className="ml-1 w-0 h-0 border-t-8 border-t-transparent border-l-[14px] border-l-white border-b-8 border-b-transparent"></div>
+                </div>
+              </div>
+            ) : null}
+            <img 
+              src={campaign.thumbnailUrl} 
+              alt={campaign.title} 
+              className={`w-full h-full object-cover transition-transform duration-700 ${campaign.videoUrl ? 'opacity-50 group-hover:scale-105' : ''}`}
+            />
+          </div>
+
+          <div className="prose prose-invert max-w-none">
+            <h2 className="text-2xl font-bold border-b border-border pb-2 mb-4">About this project</h2>
+            <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed">{campaign.longDescription}</p>
+          </div>
+          
+          {campaign.website && (
+            <div className="flex items-center gap-2 mt-4 text-primary hover:underline">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              <a href={campaign.website} target="_blank" rel="noopener noreferrer">{campaign.website}</a>
             </div>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(124,58,237,0.2)_0,transparent_50%)] pointer-events-none"></div>
-          </div>
-
-          <Tabs defaultValue="story" className="w-full mt-4">
-            <TabsList className="bg-zinc-950/50 border border-white/5 p-1">
-              <TabsTrigger value="story">Story</TabsTrigger>
-              <TabsTrigger value="team">Team</TabsTrigger>
-              <TabsTrigger value="updates">Updates</TabsTrigger>
-            </TabsList>
-            <TabsContent value="story" className="pt-4 text-muted-foreground leading-relaxed">
-              <p>{campaign.longDesc}</p>
-              <p className="mt-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-            </TabsContent>
-            <TabsContent value="team" className="pt-4 text-muted-foreground">
-              <p>Team information will be loaded from IPFS metadata.</p>
-            </TabsContent>
-            <TabsContent value="updates" className="pt-4 text-muted-foreground">
-              <p>No recent updates posted by the campaign creator.</p>
-            </TabsContent>
-          </Tabs>
+          )}
         </div>
-      </div>
+
+      </motion.div>
+
+      {/* Modals */}
+      <BuyTokensModal isOpen={isBuyModalOpen} onClose={() => setIsBuyModalOpen(false)} campaignId={campaign.id} />
+      <EditCampaignModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} campaignId={campaign.id} />
     </div>
   );
 }

@@ -2,67 +2,75 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { ethers } from "ethers";
+import { useMockData } from "@/lib/MockProvider";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onConnect: (address: string) => void;
 }
 
-export function WalletConnectModal({ isOpen, onClose, onConnect }: Props) {
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [error, setError] = useState("");
+export function WalletConnectModal({ isOpen, onClose }: Props) {
+  const { connectWallet, users } = useMockData();
+  const [customAddress, setCustomAddress] = useState("");
 
-  const connectWallet = async () => {
-    setIsConnecting(true);
-    setError("");
-    
-    try {
-      if (!(window as any).ethereum) {
-        throw new Error("MetaMask is not installed. Please install it to use this app.");
-      }
-      
-      const provider = new ethers.BrowserProvider((window as any).ethereum);
-      const accounts = await provider.send("eth_requestAccounts", []);
-      
-      if (accounts.length > 0) {
-        const address = accounts[0];
-        // TODO: Call backend to verify if user exists. If not, open Signup.
-        onConnect(address);
-        onClose();
-      }
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Failed to connect wallet.");
-    } finally {
-      setIsConnecting(false);
-    }
+  const handleMockConnect = (address: string) => {
+    connectWallet(address);
+    onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md bg-zinc-950/80 backdrop-blur-xl border-white/10">
+      <DialogContent className="sm:max-w-md bg-background/80 backdrop-blur-xl border-border">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold tracking-tight">Connect Wallet</DialogTitle>
         </DialogHeader>
         
         <div className="flex flex-col gap-4 py-6">
           <p className="text-sm text-muted-foreground">
-            Connect your Web3 wallet to invest in startups, launch your own campaigns, and trade on the secondary market.
+            For this demo, you can connect using our mock users to test different roles, or enter a custom address.
           </p>
           
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          
-          <Button 
-            size="lg" 
-            className="w-full text-base tracking-tight font-medium bg-primary/90 hover:bg-primary shadow-[0_0_20px_rgba(124,58,237,0.4)]"
-            onClick={connectWallet}
-            disabled={isConnecting}
-          >
-            {isConnecting ? "Connecting..." : "Connect MetaMask"}
-          </Button>
+          <div className="flex flex-col gap-3">
+            <Button 
+              variant="outline"
+              className="w-full justify-between"
+              onClick={() => handleMockConnect(users[0].address)}
+            >
+              <span>Mock Investor ({users[0].address.slice(0,6)}...)</span>
+              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">Investor</span>
+            </Button>
+            
+            <Button 
+              variant="outline"
+              className="w-full justify-between"
+              onClick={() => handleMockConnect(users[1].address)} // The business user
+            >
+              <span>Mock Business ({users[1].address.slice(0,6)}...)</span>
+              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">Business</span>
+            </Button>
+          </div>
+
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">Or custom address</span>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Input 
+              placeholder="0xNewCustomAddress..." 
+              value={customAddress} 
+              onChange={(e) => setCustomAddress(e.target.value)} 
+            />
+            <Button onClick={() => handleMockConnect(customAddress || "0xRandom123")}>
+              Connect
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
