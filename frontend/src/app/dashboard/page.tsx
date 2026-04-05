@@ -119,7 +119,7 @@ export default function DashboardPage() {
       ) : (
         // INVESTOR DASHBOARD
         <div className="flex flex-col gap-10">
-          <div className="bg-gradient-to-br from-primary/20 to-purple-500/10 border border-primary/20 p-8 rounded-3xl relative overflow-hidden">
+          <div className="bg-gradient-to-br from-primary/30 to-purple-500/20 border border-white/20 p-8 rounded-3xl relative overflow-hidden backdrop-blur-2xl shadow-xl ring-1 ring-white/10">
             <div className="relative z-10 flex flex-col gap-2">
               <h2 className="text-lg font-medium text-muted-foreground">Total Portfolio Value (Invested)</h2>
               <div className="text-5xl font-bold tracking-tighter text-foreground">{totalAmountInvested.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETH</div>
@@ -129,7 +129,7 @@ export default function DashboardPage() {
           </div>
 
           {/* TAB NAVIGATION */}
-          <div className="flex gap-2 p-1 bg-muted/40 rounded-xl border border-border w-fit">
+          <div className="flex gap-2 p-1.5 bg-muted/30 backdrop-blur-lg rounded-xl border border-white/10 shadow-md ring-1 ring-white/5 w-fit">
             <button onClick={() => setActiveTab("investments")} className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${activeTab === "investments" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>Investments</button>
             <button onClick={() => setActiveTab("transactions")} className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${activeTab === "transactions" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>Transactions</button>
             <button onClick={() => setActiveTab("charts")} className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${activeTab === "charts" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>Charts</button>
@@ -180,7 +180,7 @@ export default function DashboardPage() {
               {myInvestments.length > 0 ? (
                 <div className="overflow-x-auto border border-border rounded-xl">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-muted/50 border-b border-border uppercase text-muted-foreground text-xs">
+                  <thead className="bg-muted/30 backdrop-blur-md border-b border-white/10 uppercase text-muted-foreground text-xs shadow-sm ring-1 ring-white/5">
                     <tr>
                       <th className="px-6 py-4 font-semibold">Campaign</th>
                       <th className="px-6 py-4 font-semibold">Token</th>
@@ -227,7 +227,7 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   
                   {/* Allocation Pie Chart */}
-                  <div className="h-[400px] w-full bg-card/50 rounded-2xl border border-border p-6 shadow-sm flex flex-col items-center">
+                  <div className="h-[400px] w-full bg-card/40 backdrop-blur-xl rounded-2xl border border-white/10 p-6 shadow-xl ring-1 ring-white/5 flex flex-col items-center">
                     <h3 className="font-semibold text-lg mb-4 text-center">Investment Allocation</h3>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -242,7 +242,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Growth Line Chart */}
-                  <div className="h-[400px] w-full bg-card/50 rounded-2xl border border-border p-6 shadow-sm flex flex-col items-center">
+                  <div className="h-[400px] w-full bg-card/40 backdrop-blur-xl rounded-2xl border border-white/10 p-6 shadow-xl ring-1 ring-white/5 flex flex-col items-center">
                     <h3 className="font-semibold text-lg mb-4 text-center">Cumulative Portfolio Value</h3>
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={cumulativeData}>

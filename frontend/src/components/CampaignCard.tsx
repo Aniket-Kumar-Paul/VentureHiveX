@@ -9,11 +9,11 @@ interface CampaignCardProps {
 export function CampaignCard({ campaign }: CampaignCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active": return "bg-green-500/10 text-green-500 border-green-500/20";
-      case "Upcoming": return "bg-blue-500/10 text-blue-500 border-blue-500/20";
-      case "Funded": return "bg-purple-500/10 text-purple-500 border-purple-500/20";
-      case "Failed": return "bg-red-500/10 text-red-500 border-red-500/20";
-      default: return "bg-gray-500/10 text-gray-500 border-gray-500/20";
+      case "Active": return "bg-green-500/90 text-white border-green-500 shadow-md backdrop-blur-xl";
+      case "Upcoming": return "bg-blue-500/90 text-white border-blue-500 shadow-md backdrop-blur-xl";
+      case "Funded": return "bg-purple-500/90 text-white border-purple-500 shadow-md backdrop-blur-xl";
+      case "Failed": return "bg-red-500/90 text-white border-red-500 shadow-md backdrop-blur-xl";
+      default: return "bg-gray-500/90 text-white border-gray-500 shadow-md backdrop-blur-xl";
     }
   };
 

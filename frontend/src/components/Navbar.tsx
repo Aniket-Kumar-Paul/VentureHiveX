@@ -42,20 +42,22 @@ export function Navbar() {
                   Complete Profile
                 </Button>
               )}
-              <button 
+              <div
+                className="group relative flex items-center justify-center p-2 rounded-full border border-border bg-muted/50 hover:bg-primary/20 hover:border-primary/50 transition-all cursor-pointer"
                 onClick={() => setIsProfileModalOpen(true)}
-                className="flex items-center gap-3 border border-border px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted transition-colors text-left"
               >
-                <div className="flex flex-col items-end">
-                  <span className="text-xs font-semibold leading-none">{currentUser.name || "Anonymous"}</span>
-                  <span className="text-[10px] text-muted-foreground mt-0.5">
+                <div className="flex items-center justify-center text-foreground group-hover:text-primary transition-colors">
+                  <UserIcon className="size-5" />
+                </div>
+                <div className="absolute right-0 top-12 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right scale-95 group-hover:scale-100 bg-card border border-border rounded-xl shadow-2xl p-4 w-48 z-50 flex flex-col gap-1 cursor-default" onClick={e => e.stopPropagation()}>
+                  <span className="text-sm font-bold truncate">{currentUser.name || "Anonymous"}</span>
+                  <span className="text-xs text-muted-foreground truncate">{currentUser.email || "No Email"}</span>
+                  <span className="text-[10px] text-muted-foreground mt-2 bg-muted px-2 py-1 rounded inline-block w-fit">
                     {currentUser.address.slice(0, 6)}...{currentUser.address.slice(-4)}
                   </span>
+                  <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => setIsProfileModalOpen(true)}>Edit Profile</Button>
                 </div>
-                <div className="size-6 bg-primary/20 rounded-full flex items-center justify-center text-primary">
-                  <UserIcon className="size-3.5" />
-                </div>
-              </button>
+              </div>
               <Button variant="ghost" size="sm" onClick={disconnectWallet}>
                 Disconnect
               </Button>
