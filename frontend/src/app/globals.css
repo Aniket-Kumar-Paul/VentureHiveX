@@ -6,6 +6,27 @@
   .text-balance {
     text-wrap: balance;
   }
+  .animate-bg {
+    background-size: 200% 200%;
+    animation: gradientMove 15s ease infinite alternate;
+  }
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+html {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 @layer base {

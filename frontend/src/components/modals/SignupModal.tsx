@@ -82,10 +82,11 @@ export function SignupModal({ isOpen, onClose }: Props) {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="gender">Gender</Label>
+              <Label htmlFor="gender">Gender *</Label>
               <select 
                 id="gender" 
-                className="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
+                required
+                className="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
                 value={gender} 
                 onChange={e => setGender(e.target.value)}
               >
@@ -98,8 +99,8 @@ export function SignupModal({ isOpen, onClose }: Props) {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="dob">Date of Birth</Label>
-              <Input id="dob" type="date" value={dob} onChange={e => setDob(e.target.value)} />
+              <Label htmlFor="dob">Date of Birth *</Label>
+              <Input id="dob" type="date" required value={dob} onChange={e => setDob(e.target.value)} />
             </div>
           </div>
 
@@ -127,13 +128,18 @@ export function SignupModal({ isOpen, onClose }: Props) {
             />
           </div>
           
-          <Button 
-            type="submit" 
-            size="lg" 
-            className="w-full mt-4 text-base tracking-tight font-medium"
-          >
-            Complete Registration
-          </Button>
+          <div className="space-y-4 mt-4">
+            <p className="text-sm text-destructive font-medium p-3 bg-destructive/10 rounded-lg border border-destructive/20 text-center">
+              ⚠️ Note: Your Role, Gender, and Date of Birth cannot be changed after registration.
+            </p>
+            <Button 
+              type="submit" 
+              size="lg" 
+              className="w-full text-base tracking-tight font-medium"
+            >
+              Complete Registration
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

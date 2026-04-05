@@ -37,7 +37,7 @@ export default function CampaignsPage() {
         <div className="flex flex-wrap gap-3 items-center">
           <Input 
             placeholder="Search campaigns..." 
-            className="w-[200px]" 
+            className="w-[200px] h-10" 
             value={searchTerm} 
             onChange={(e) => setSearchTerm(e.target.value)}
           />

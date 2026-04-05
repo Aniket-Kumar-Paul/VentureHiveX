@@ -56,18 +56,18 @@ export default function SingleCampaignPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col lg:flex-row gap-8">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col lg:flex-row gap-8 items-start">
         
         {/* Left Section (Smaller): Stats and Actions */}
-        <div className="lg:w-1/3 order-2 lg:order-1 flex flex-col gap-6">
+        <div className="lg:w-1/3 order-2 lg:order-1 flex flex-col gap-6 lg:sticky lg:top-24">
           <div className="bg-card border border-border rounded-3xl p-6 shadow-xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-purple-500" />
             <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-4">Investment Goal</h3>
-            <div className="text-4xl font-extrabold tracking-tight">${campaign.goalAmount.toLocaleString()}</div>
+            <div className="text-4xl font-extrabold tracking-tight">{campaign.goalAmount.toLocaleString()} ETH</div>
             
             <div className="mt-6 space-y-2">
               <div className="flex justify-between text-sm font-semibold">
-                <span className="text-primary">${campaign.amountRaised.toLocaleString()} Raised</span>
+                <span className="text-primary">{campaign.amountRaised.toLocaleString()} ETH Raised</span>
                 <span>{progress}%</span>
               </div>
               <div className="h-3 w-full rounded-full bg-secondary overflow-hidden">
@@ -80,12 +80,20 @@ export default function SingleCampaignPage() {
 
             <div className="mt-8 space-y-3 text-sm">
               <div className="flex justify-between py-2 border-b border-border/50">
+                <span className="text-muted-foreground">Start Date</span>
+                <span className="font-semibold">{new Date(campaign.startDate).toLocaleDateString()}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-border/50">
+                <span className="text-muted-foreground">End Date</span>
+                <span className="font-semibold">{new Date(campaign.endDate).toLocaleDateString()}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-border/50">
                 <span className="text-muted-foreground">Token Symbol</span>
-                <span className="font-semibold">{campaign.tokenSymbol}</span>
+                <span className="font-semibold cursor-help" title={campaign.tokenName}>{campaign.tokenSymbol}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-border/50">
                 <span className="text-muted-foreground">Price Per Token</span>
-                <span className="font-semibold text-primary">${campaign.pricePerToken.toFixed(4)}</span>
+                <span className="font-semibold text-primary">{campaign.pricePerToken.toFixed(4)} ETH</span>
               </div>
               <div className="flex justify-between py-2 border-b border-border/50">
                 <span className="text-muted-foreground">Status</span>
@@ -163,18 +171,33 @@ export default function SingleCampaignPage() {
           </div>
 
           <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black/80 border border-border relative flex items-center justify-center group shadow-2xl">
-            {campaign.videoUrl ? (
-              <div className="absolute inset-0 flex items-center justify-center z-10">
-                <div className="size-16 rounded-full bg-primary/90 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-[0_0_30px_rgba(124,58,237,0.6)]">
-                  <div className="ml-1 w-0 h-0 border-t-8 border-t-transparent border-l-[14px] border-l-white border-b-8 border-b-transparent"></div>
-                </div>
+            {campaign.videoUrl && campaign.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/) && campaign.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/)?.[2].length === 11 ? (
+              <iframe
+                width="100%"
+                height="100%"
+                src={`https://www.youtube.com/embed/${campaign.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/)?.[2]}`}
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              ></iframe>
+            ) : (
+              <div className="w-full h-full relative">
+                {campaign.videoUrl && (
+                  <div className="absolute inset-0 flex items-center justify-center z-10">
+                    <div className="size-16 rounded-full bg-primary/90 flex items-center justify-center cursor-pointer shadow-[0_0_30px_rgba(124,58,237,0.6)]">
+                      <div className="ml-1 w-0 h-0 border-t-8 border-t-transparent border-l-[14px] border-l-white border-b-8 border-b-transparent"></div>
+                    </div>
+                  </div>
+                )}
+                <img 
+                  src={campaign.thumbnailUrl} 
+                  alt={campaign.title} 
+                  className={`w-full h-full object-cover ${campaign.videoUrl ? 'opacity-50 group-hover:scale-105 transition-transform duration-700' : ''}`}
+                />
               </div>
-            ) : null}
-            <img 
-              src={campaign.thumbnailUrl} 
-              alt={campaign.title} 
-              className={`w-full h-full object-cover transition-transform duration-700 ${campaign.videoUrl ? 'opacity-50 group-hover:scale-105' : ''}`}
-            />
+            )}
           </div>
 
           <div className="prose prose-invert max-w-none">

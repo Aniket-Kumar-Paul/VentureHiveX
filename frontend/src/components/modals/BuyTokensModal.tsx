@@ -14,7 +14,7 @@ interface Props {
 }
 
 export function BuyTokensModal({ isOpen, onClose, campaignId }: Props) {
-  const { campaigns, investInCampaign } = useMockData();
+  const { currentUser, campaigns, investInCampaign } = useMockData();
   const [tokenAmount, setTokenAmount] = useState("");
   
   const campaign = campaigns.find(c => c.id === campaignId);
@@ -37,11 +37,17 @@ export function BuyTokensModal({ isOpen, onClose, campaignId }: Props) {
           <DialogTitle className="text-xl font-bold tracking-tight">Invest in {campaign.title}</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleInvest} className="flex flex-col gap-6 py-4">
-          <div className="space-y-2 bg-muted/50 p-4 rounded-xl border border-border">
+        {currentUser && !currentUser.hasCompletedProfile ? (
+          <div className="py-8 text-center space-y-4">
+            <p className="text-muted-foreground font-medium">You must complete your profile before investing in campaigns.</p>
+            <Button onClick={onClose} variant="outline" className="mt-2">Close</Button>
+          </div>
+        ) : (
+          <form onSubmit={handleInvest} className="flex flex-col gap-6 py-4">
+            <div className="space-y-2 bg-muted/50 p-4 rounded-xl border border-border">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Token Price</span>
-              <span className="font-semibold">${campaign.pricePerToken.toFixed(4)} USD</span>
+              <span className="font-semibold">{campaign.pricePerToken.toFixed(4)} ETH</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Token Symbol</span>
@@ -78,14 +84,15 @@ export function BuyTokensModal({ isOpen, onClose, campaignId }: Props) {
 
             <div className="flex justify-between items-center p-4 bg-primary/10 rounded-lg border border-primary/20">
               <span className="font-medium text-primary">Total Price</span>
-              <span className="text-2xl font-bold text-primary">${totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className="text-2xl font-bold text-primary">{totalPrice.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })} ETH</span>
             </div>
           </div>
           
-          <Button type="submit" size="lg" className="w-full text-lg shadow-[0_0_20px_rgba(var(--primary),0.3)]">
-            Confirm Investment
-          </Button>
-        </form>
+            <Button type="submit" size="lg" className="w-full text-lg shadow-[0_0_20px_rgba(var(--primary),0.3)]">
+              Confirm Investment
+            </Button>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );

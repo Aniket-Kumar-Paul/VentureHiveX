@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMockData } from "@/lib/MockProvider";
+import { toast } from "sonner";
 
 interface Props {
   isOpen: boolean;
@@ -77,7 +78,29 @@ export function CreateCampaignModal({ isOpen, onClose }: Props) {
   };
 
   const nextStep = () => {
+    if (step === 0) {
+      if (!title || !category || !shortDesc || !thumbnail) {
+        toast.error("Please fill in all mandatory fields (*).");
+        return;
+      }
+    }
+    if (step === 1) {
+      if (!goalAmount || !startDate || !endDate || !totalTokenSupply) {
+        toast.error("Please fill in all mandatory fields (*).");
+        return;
+      }
+      const sDate = new Date(startDate);
+      const eDate = new Date(endDate);
+      if (eDate <= sDate) {
+        toast.error("End date must be after start date.");
+        return;
+      }
+    }
     if (step === 2) {
+      if (!tokenName || !tokenSymbol) {
+        toast.error("Please fill in all mandatory fields (*).");
+        return;
+      }
       if (campaigns.some(c => c.tokenSymbol.toLowerCase() === tokenSymbol.toLowerCase())) {
         setTokenError("Token symbol already exists.");
         return;
@@ -118,8 +141,8 @@ export function CreateCampaignModal({ isOpen, onClose }: Props) {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Category</Label>
-                    <select className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={category} onChange={e => setCategory(e.target.value)}>
+                    <Label>Category *</Label>
+                    <select className="flex h-9 w-full rounded-md border border-input bg-background text-foreground px-3 py-1 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={category} onChange={e => setCategory(e.target.value)}>
                       <option value="Technology">Technology</option>
                       <option value="Gaming">Gaming</option>
                       <option value="Finance">Finance</option>
@@ -138,12 +161,22 @@ export function CreateCampaignModal({ isOpen, onClose }: Props) {
                 </div>
                 <div className="space-y-2">
                   <Label>Long Description</Label>
-                  <textarea className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={longDesc} onChange={e => setLongDesc(e.target.value)} placeholder="Detailed pitch..." />
+                  <textarea className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={longDesc} onChange={e => setLongDesc(e.target.value)} placeholder="Detailed pitch..." />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Thumbnail URL</Label>
-                    <Input type="url" value={thumbnail} onChange={e => setThumbnail(e.target.value)} placeholder="https://image..." />
+                    <Label>Thumbnail (Upload) *</Label>
+                    <Input 
+                      type="file" 
+                      accept="image/*" 
+                      className="cursor-pointer file:cursor-pointer"
+                      onChange={e => {
+                        if (e.target.files && e.target.files[0]) {
+                          setThumbnail(URL.createObjectURL(e.target.files[0]));
+                          toast.success("Image selected (Mock IPFS upload ready).");
+                        }
+                      }} 
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Video URL</Label>
@@ -156,17 +189,17 @@ export function CreateCampaignModal({ isOpen, onClose }: Props) {
             {step === 1 && (
               <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-5 py-2">
                 <div className="space-y-2">
-                  <Label>Goal Amount ($) *</Label>
-                  <Input type="number" required value={goalAmount} onChange={e => setGoalAmount(e.target.value)} placeholder="100000" />
+                  <Label>Goal Amount (ETH) *</Label>
+                  <Input type="number" required value={goalAmount} onChange={e => setGoalAmount(e.target.value)} placeholder="100" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Start Date & Time</Label>
-                    <Input type="datetime-local" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                    <Label>Start Date & Time *</Label>
+                    <Input type="datetime-local" required value={startDate} onChange={e => setStartDate(e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>End Date & Time</Label>
-                    <Input type="datetime-local" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                    <Label>End Date & Time *</Label>
+                    <Input type="datetime-local" required value={endDate} onChange={e => setEndDate(e.target.value)} />
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -175,7 +208,7 @@ export function CreateCampaignModal({ isOpen, onClose }: Props) {
                   <p className="text-xs text-muted-foreground mt-2 px-1">
                     Auto-calculated Price Per Token: 
                     <strong className="text-primary ml-1">
-                      ${(parseFloat(goalAmount || "0") / parseFloat(totalTokenSupply || "1") || 0).toFixed(4)}
+                      {(parseFloat(goalAmount || "0") / parseFloat(totalTokenSupply || "1") || 0).toFixed(4)} ETH
                     </strong>
                   </p>
                 </div>
@@ -198,15 +231,18 @@ export function CreateCampaignModal({ isOpen, onClose }: Props) {
 
             {step === 3 && (
               <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-6 py-2">
+                <div className="bg-destructive/10 border border-destructive/20 text-destructive p-4 rounded-xl text-sm font-medium">
+                  ⚠️ Please ensure all details are correct. You cannot edit funding goals, dates, or token details once the campaign is published and deployed as a smart contract.
+                </div>
                 <div className="bg-muted p-5 rounded-xl border border-border text-sm space-y-4">
                   <h3 className="text-lg font-bold pb-2 border-b border-border/50">Campaign Summary</h3>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                     <div><span className="text-muted-foreground">Title:</span> <span className="font-semibold">{title}</span></div>
                     <div><span className="text-muted-foreground">Category:</span> <span className="font-semibold">{category}</span></div>
-                    <div><span className="text-muted-foreground">Goal:</span> <span className="font-semibold">${parseFloat(goalAmount||"0").toLocaleString()}</span></div>
+                    <div><span className="text-muted-foreground">Goal:</span> <span className="font-semibold">{parseFloat(goalAmount||"0").toLocaleString()} ETH</span></div>
                     <div><span className="text-muted-foreground">Supply:</span> <span className="font-semibold">{parseFloat(totalTokenSupply||"0").toLocaleString()}</span></div>
                     <div><span className="text-muted-foreground">Token:</span> <span className="font-semibold">{tokenName} ({tokenSymbol})</span></div>
-                    <div><span className="text-muted-foreground">Price/Token:</span> <span className="font-semibold text-primary">${(parseFloat(goalAmount||"0") / parseFloat(totalTokenSupply||"1") || 0).toFixed(4)}</span></div>
+                    <div><span className="text-muted-foreground">Price/Token:</span> <span className="font-semibold text-primary">{(parseFloat(goalAmount||"0") / parseFloat(totalTokenSupply||"1") || 0).toFixed(4)} ETH</span></div>
                   </div>
                 </div>
               </motion.div>

@@ -52,7 +52,7 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
         {/* Progress Bar */}
         <div className="space-y-1.5 mt-2">
           <div className="flex justify-between text-xs font-medium">
-            <span className="text-primary">${campaign.amountRaised.toLocaleString()} raised</span>
+            <span className="text-primary">{campaign.amountRaised.toLocaleString()} ETH raised</span>
             <span className="text-muted-foreground">{progress}%</span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
@@ -62,13 +62,13 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
             />
           </div>
           <div className="text-xs text-muted-foreground text-right">
-            Goal: ${campaign.goalAmount.toLocaleString()}
+            Goal: {campaign.goalAmount.toLocaleString()} ETH
           </div>
         </div>
 
         {/* Footer info */}
         <div className="mt-2 flex items-center justify-between border-t border-border pt-3 text-xs font-medium text-muted-foreground">
-          <span>{campaign.tokenSymbol} @ ${campaign.pricePerToken}</span>
+          <span>{campaign.tokenSymbol} @ {campaign.pricePerToken} ETH</span>
           <span>{new Date(campaign.endDate).toLocaleDateString()}</span>
         </div>
       </div>
