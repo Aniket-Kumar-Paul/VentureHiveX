@@ -40,6 +40,10 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" disableTransitionOnChange>
           <MockProvider>
+            <div className="fixed inset-0 -z-30 overflow-hidden pointer-events-none">
+              <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/20 rounded-full blur-[100px] animate-[spin_60s_linear_infinite]" />
+              <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/20 rounded-full blur-[100px] animate-[spin_40s_linear_infinite_reverse]" />
+            </div>
             <Starfield />
             <Navbar />
             <main className="relative z-0 pt-8 pb-16">

@@ -22,7 +22,7 @@ export function WalletConnectModal({ isOpen, onClose }: Props) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md bg-background/80 backdrop-blur-xl border-border">
+      <DialogContent className="sm:max-w-md bg-background shadow-2xl border-border">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold tracking-tight">Connect Wallet</DialogTitle>
         </DialogHeader>

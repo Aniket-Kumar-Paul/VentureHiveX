@@ -24,7 +24,7 @@ export default function LandingPage() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="space-y-4 max-w-3xl"
           >
-            <h1 className="text-4xl font-extrabold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-primary/50 animate-gradient-x">
+            <h1 className="text-4xl font-extrabold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-primary bg-[length:200%_auto] animate-gradient-x">
               Fund the Future with VentureHiveX
             </h1>
             <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">

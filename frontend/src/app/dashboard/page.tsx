@@ -7,12 +7,15 @@ import { useState } from "react";
 import { CreateCampaignModal } from "@/components/CreateCampaignModal";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
+
+const COLORS = ['#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#f97316'];
 
 export default function DashboardPage() {
   const { currentUser, campaigns, investments } = useMockData();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"investments" | "transactions" | "charts">("investments");
+  const [categoryFilter, setCategoryFilter] = useState("All");
 
   if (!currentUser) {
     return (
@@ -56,6 +59,24 @@ export default function DashboardPage() {
       date: new Date(inv.dateInvested).toLocaleDateString()
     };
   });
+
+  const pieData = investmentSummary.map(item => ({
+    name: item.campaign.title,
+    value: item.totalInvested
+  }));
+
+  const cumulativeData = [...myInvestments]
+    .sort((a, b) => new Date(a.dateInvested).getTime() - new Date(b.dateInvested).getTime())
+    .reduce((acc, curr) => {
+      const prevTotal = acc.length > 0 ? acc[acc.length - 1].total : 0;
+      acc.push({
+        date: new Date(curr.dateInvested).toLocaleDateString(),
+        total: prevTotal + curr.amountInvested
+      });
+      return acc;
+    }, [] as { date: string, total: number }[]);
+
+  const filteredSummary = investmentSummary.filter(i => categoryFilter === "All" || i.campaign.category === categoryFilter);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -116,10 +137,22 @@ export default function DashboardPage() {
 
           {activeTab === "investments" && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <h2 className="text-2xl font-bold tracking-tight border-b border-border pb-4">My Investments Summary</h2>
-              {investmentSummary.length > 0 ? (
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-border pb-4">
+                <h2 className="text-2xl font-bold tracking-tight">My Investments Summary</h2>
+                <select 
+                  className="h-10 mt-2 sm:mt-0 rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                >
+                  <option value="All">All Categories</option>
+                  {Array.from(new Set(investmentSummary.map(i => i.campaign.category))).map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+              {filteredSummary.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {investmentSummary.map((item, i) => (
+                  {filteredSummary.map((item, i) => (
                     <Link key={item.campaign.id} href={`/campaigns/${item.campaign.id}`} className="block group">
                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="bg-card border border-border p-6 rounded-2xl flex flex-col gap-4 shadow-sm group-hover:shadow-[0_0_20px_rgba(124,58,237,0.2)] group-hover:border-primary/50 transition-all h-full">
                     <h3 className="font-bold text-lg line-clamp-1">{item.campaign.title}</h3>
@@ -191,16 +224,37 @@ export default function DashboardPage() {
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
               <h2 className="text-2xl font-bold tracking-tight border-b border-border pb-4">Portfolio Analytics</h2>
               {myInvestments.length > 0 ? (
-                <div className="h-[400px] w-full bg-card/50 rounded-2xl border border-border p-6 shadow-sm">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                      <XAxis dataKey="name" stroke="#888" fontSize={12} tickLine={false} axisLine={false} />
-                      <YAxis stroke="#888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value} ETH`} />
-                      <Tooltip contentStyle={{ backgroundColor: '#111', borderRadius: '8px', border: '1px solid #333' }} itemStyle={{ color: '#fff' }} />
-                      <Bar dataKey="amount" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  
+                  {/* Allocation Pie Chart */}
+                  <div className="h-[400px] w-full bg-card/50 rounded-2xl border border-border p-6 shadow-sm flex flex-col items-center">
+                    <h3 className="font-semibold text-lg mb-4 text-center">Investment Allocation</h3>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={pieData} cx="50%" cy="50%" labelLine={false} label={({ name, percent }: any) => percent !== undefined ? `${name} ${(percent * 100).toFixed(0)}%` : name} outerRadius={100} fill="#8884d8" dataKey="value">
+                          {pieData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip contentStyle={{ backgroundColor: 'var(--background)', borderRadius: '8px', border: '1px solid var(--border)' }} itemStyle={{ color: 'var(--foreground)' }} formatter={(value: any) => `${value} ETH`} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Growth Line Chart */}
+                  <div className="h-[400px] w-full bg-card/50 rounded-2xl border border-border p-6 shadow-sm flex flex-col items-center">
+                    <h3 className="font-semibold text-lg mb-4 text-center">Cumulative Portfolio Value</h3>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={cumulativeData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                        <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
+                        <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value} ETH`} />
+                        <Tooltip contentStyle={{ backgroundColor: 'var(--background)', borderRadius: '8px', border: '1px solid var(--border)' }} itemStyle={{ color: 'var(--foreground)' }} />
+                        <Line type="monotone" dataKey="total" stroke="var(--primary)" strokeWidth={3} dot={{ fill: 'var(--primary)', strokeWidth: 2 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+
                 </div>
               ) : (
                 <p className="text-muted-foreground">No data available for charts.</p>

@@ -45,7 +45,7 @@ export function SignupModal({ isOpen, onClose }: Props) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
-      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto bg-background/95 backdrop-blur-xl border-border">
+      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto bg-background shadow-2xl border-border">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold tracking-tight">Complete Profile</DialogTitle>
           <DialogDescription>

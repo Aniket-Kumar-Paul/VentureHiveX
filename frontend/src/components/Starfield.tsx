@@ -15,9 +15,9 @@ export function Starfield() {
     };
     
     setLayers({
-      l1: createLayer(150),
-      l2: createLayer(75),
-      l3: createLayer(25)
+      l1: createLayer(40),
+      l2: createLayer(15),
+      l3: createLayer(10)
     });
   }, []);
 

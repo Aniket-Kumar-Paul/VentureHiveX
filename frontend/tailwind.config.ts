@@ -59,17 +59,15 @@ const config = {
         sm: "calc(var(--radius) - 4px)",
       },
       animation: {
-        'gradient-x': 'gradient-x 3s ease infinite',
+        'gradient-x': 'gradient-x 4s linear infinite',
       },
       keyframes: {
         'gradient-x': {
-          '0%, 100%': {
-            'background-size': '200% 200%',
-            'background-position': 'left center'
+          '0%': {
+            'background-position': '0% 50%'
           },
-          '50%': {
-            'background-size': '200% 200%',
-            'background-position': 'right center'
+          '100%': {
+            'background-position': '200% 50%'
           },
         },
       },

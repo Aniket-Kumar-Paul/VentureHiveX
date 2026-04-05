@@ -51,7 +51,7 @@ export function ProfileModal({ isOpen, onClose }: Props) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
-      <DialogContent className="sm:max-w-lg bg-background/95 backdrop-blur-xl border-border">
+      <DialogContent className="sm:max-w-lg bg-background shadow-2xl border-border">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold tracking-tight">Edit Profile</DialogTitle>
         </DialogHeader>

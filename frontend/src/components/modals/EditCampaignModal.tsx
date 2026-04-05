@@ -59,7 +59,7 @@ export function EditCampaignModal({ isOpen, onClose, campaignId }: Props) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
-      <DialogContent className="sm:max-w-2xl bg-background/95 backdrop-blur-xl border-border max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl bg-background shadow-2xl border-border max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold tracking-tight">Edit Campaign</DialogTitle>
           <DialogDescription>

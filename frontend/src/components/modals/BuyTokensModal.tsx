@@ -32,7 +32,7 @@ export function BuyTokensModal({ isOpen, onClose, campaignId }: Props) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md bg-background/95 backdrop-blur-xl border-border">
+      <DialogContent className="sm:max-w-md bg-background shadow-2xl border-border">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold tracking-tight">Invest in {campaign.title}</DialogTitle>
         </DialogHeader>
