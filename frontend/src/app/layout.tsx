@@ -46,7 +46,7 @@ export default function RootLayout({
             </div>
             <Starfield />
             <Navbar />
-            <main className="relative z-0 pt-8 pb-16">
+            <main className="relative z-0 pt-8">
               {children}
             </main>
             <Toaster richColors position="bottom-right" />

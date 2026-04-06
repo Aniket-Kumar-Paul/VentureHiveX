@@ -55,7 +55,7 @@ export default function SingleCampaignPage() {
   const handleWithdraw = () => toast.success("Withdrawing funds via smart contract... (Mocked)");
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 pt-0">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col lg:flex-row gap-8 items-start">
         
         {/* Left Section (Smaller): Stats and Actions */}

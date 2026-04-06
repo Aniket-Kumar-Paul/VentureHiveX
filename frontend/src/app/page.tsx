@@ -16,7 +16,7 @@ export default function LandingPage() {
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
       {/* Hero Section */}
       <div className="container px-4 md:px-6 mb-24">
-        <div className="flex flex-col items-center justify-center space-y-8 text-center mt-20">
+        <div className="flex flex-col items-center justify-center space-y-12 text-center mt-20">
           
           <motion.div 
             initial={{ opacity: 0, y: 20 }} 
@@ -36,7 +36,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }} 
             animate={{ opacity: 1, y: 0 }} 
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            className="w-full max-w-sm space-y-4 flex flex-col sm:flex-row gap-4 justify-center items-center"
+            className="w-full max-w-sm flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
             <Link href="/campaigns" className="w-full sm:w-auto flex justify-center">
               <Button size="lg" className="w-full sm:w-auto h-12 px-8 border border-transparent text-base shadow-[0_0_30px_rgba(124,58,237,0.4)] hover:shadow-[0_0_40px_rgba(124,58,237,0.6)] transition-all flex items-center justify-center">
