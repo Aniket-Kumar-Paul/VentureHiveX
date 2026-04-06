@@ -84,9 +84,9 @@ export default function LandingPage() {
             
             {[
               { step: "1", title: "Create Profile", desc: "Register as a Business to launch or Investor to fund." },
-              { step: "2", title: "Launch/Browse", desc: "Startups configure tokennomics; investors explore pitches." },
+              { step: "2", title: "Launch / Browse", desc: "Startups configure tokennomics; investors explore pitches." },
               { step: "3", title: "Fund via Smart Contract", desc: "Invest ETH securely. Funds held in escrow until goal is hit." },
-              { step: "4", title: "Claim Tokens", desc: "Receive startup tokens automatically upon successful raise." }
+              { step: "4", title: "Claim & Trade Tokens", desc: "Receive & trade campaign tokens upon successful raise." }
             ].map((s, i) => (
               <div key={i} className="relative z-10 flex flex-col items-center text-center space-y-4">
                 <div className="w-16 h-16 rounded-full bg-background border-2 border-primary flex items-center justify-center text-2xl font-bold text-primary shadow-[0_0_15px_rgba(124,58,237,0.3)]">
@@ -133,7 +133,7 @@ const features = [
   },
   {
     title: "Secondary Markets",
-    desc: "Trade your startup tokens on secondary DEXs seamlessly once the campaign completes.",
+    desc: "Trade your tokens on our own integrated secondary DEX seamlessly once the campaign completes.",
     icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
   }
 ];
