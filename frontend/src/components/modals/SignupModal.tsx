@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { useMockData } from "@/lib/MockProvider";
+import { useApp } from "@/lib/AppProvider";
 
 interface Props {
   isOpen: boolean;
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function SignupModal({ isOpen, onClose }: Props) {
-  const { currentUser, registerUser } = useMockData();
+  const { currentUser, registerUser } = useApp();
   const [role, setRole] = useState<"Investor" | "Business">("Investor");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

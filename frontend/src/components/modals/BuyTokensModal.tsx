@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { useMockData } from "@/lib/MockProvider";
+import { useApp } from "@/lib/AppProvider";
 
 interface Props {
   isOpen: boolean;
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export function BuyTokensModal({ isOpen, onClose, campaignId }: Props) {
-  const { currentUser, campaigns, investInCampaign } = useMockData();
+  const { currentUser, campaigns, investInCampaign } = useApp();
   const [tokenAmount, setTokenAmount] = useState("");
   
   const campaign = campaigns.find(c => c.id === campaignId);

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMockData } from "@/lib/MockProvider";
+import { useApp } from "@/lib/AppProvider";
 import { toast } from "sonner";
 
 interface Props {
@@ -17,7 +17,7 @@ interface Props {
 const steps = ["Content", "Funding", "Token", "Review"];
 
 export function CreateCampaignModal({ isOpen, onClose }: Props) {
-  const { currentUser, createCampaign, campaigns } = useMockData();
+  const { currentUser, createCampaign, campaigns } = useApp();
   const [step, setStep] = useState(0);
 
   // Form State

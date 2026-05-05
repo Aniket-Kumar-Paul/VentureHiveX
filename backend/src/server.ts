@@ -1,8 +1,10 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
 import prisma from './config/prismaClient';
 
 import authRoutes from './routes/authRoutes';
@@ -11,8 +13,6 @@ import campaignRoutes from './routes/campaignRoutes';
 import ipfsRoutes from './routes/ipfsRoutes';
 import { startIndexer } from './indexer/blockchainIndexer';
 import { startCronJobs } from './jobs/campaignCron';
-
-dotenv.config();
 
 const app = express();
 const port = parseInt(process.env.SERVER_PORT || '8000', 10);
@@ -35,7 +35,7 @@ app.get('/health', async (req, res) => {
 });
 
 // API Routes
-app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/ipfs', ipfsRoutes);

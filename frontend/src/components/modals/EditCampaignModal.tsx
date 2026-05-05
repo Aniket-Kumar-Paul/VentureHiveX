@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useMockData } from "@/lib/MockProvider";
+import { useApp } from "@/lib/AppProvider";
 
 interface Props {
   isOpen: boolean;
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export function EditCampaignModal({ isOpen, onClose, campaignId }: Props) {
-  const { campaigns, updateCampaign } = useMockData();
+  const { campaigns, updateCampaign } = useApp();
   const campaign = campaigns.find(c => c.id === campaignId);
 
   const [title, setTitle] = useState("");

@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { useMockData } from "@/lib/MockProvider";
+import { useApp } from "@/lib/AppProvider";
 import { Logo } from "@/components/Logo";
 
 export default function LandingPage() {
-  const { currentUser } = useMockData();
+  const { currentUser } = useApp();
   const isInvestor = currentUser?.role === "Investor";
   const actionText = isInvestor ? "Invest in projects" : "Launch a Project";
   const actionLink = isInvestor ? "/campaigns" : "/dashboard";

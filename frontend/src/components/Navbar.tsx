@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { WalletConnectModal } from "./WalletConnectModal";
 import { useState } from "react";
-import { useMockData } from "@/lib/MockProvider";
+import { useApp } from "@/lib/AppProvider";
 import { User as UserIcon } from "lucide-react";
 import { SignupModal } from "./modals/SignupModal";
 import { ProfileModal } from "./modals/ProfileModal";
@@ -15,7 +15,7 @@ export function Navbar() {
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   
-  const { currentUser, disconnectWallet } = useMockData();
+  const { currentUser, disconnectWallet } = useApp();
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/60 backdrop-blur-md transition-colors">

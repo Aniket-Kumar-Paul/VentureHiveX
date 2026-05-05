@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useMockData } from "@/lib/MockProvider";
+import { useApp } from "@/lib/AppProvider";
 import { CampaignCard } from "@/components/CampaignCard";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 
 export default function CampaignsPage() {
-  const { campaigns } = useMockData();
+  const { campaigns } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [sortOrder, setSortOrder] = useState("Recent");

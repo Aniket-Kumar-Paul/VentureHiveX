@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
-import { useMockData } from "@/lib/MockProvider";
+import { useApp } from "@/lib/AppProvider";
 
 interface Props {
   isOpen: boolean;
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function ProfileModal({ isOpen, onClose }: Props) {
-  const { currentUser, updateUser } = useMockData();
+  const { currentUser, updateUser } = useApp();
   
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

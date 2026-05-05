@@ -1,6 +1,6 @@
 "use client";
 
-import { useMockData } from "@/lib/MockProvider";
+import { useApp } from "@/lib/AppProvider";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
@@ -12,7 +12,7 @@ import { motion } from "framer-motion";
 export default function SingleCampaignPage() {
   const params = useParams();
   const router = useRouter();
-  const { campaigns, currentUser } = useMockData();
+  const { campaigns, currentUser } = useApp();
   const id = params?.id as string;
   const campaign = campaigns.find((c) => c.id === id);
 

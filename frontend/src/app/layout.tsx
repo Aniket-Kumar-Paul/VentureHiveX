@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 
 import { Navbar } from "@/components/Navbar";
 import { ThemeProvider } from "@/components/theme-provider";
-import { MockProvider } from "@/lib/MockProvider";
+import { AppProvider } from "@/lib/AppProvider";
 import { Toaster } from "sonner";
 import { Starfield } from "@/components/Starfield";
 
@@ -39,7 +39,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground relative`}
       >
         <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" disableTransitionOnChange>
-          <MockProvider>
+          <AppProvider>
             <div className="fixed inset-0 -z-30 overflow-hidden pointer-events-none">
               <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/20 rounded-full blur-[100px] animate-[spin_60s_linear_infinite]" />
               <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/20 rounded-full blur-[100px] animate-[spin_40s_linear_infinite_reverse]" />
@@ -50,7 +50,7 @@ export default function RootLayout({
               {children}
             </main>
             <Toaster richColors position="bottom-right" />
-          </MockProvider>
+          </AppProvider>
         </ThemeProvider>
       </body>
     </html>

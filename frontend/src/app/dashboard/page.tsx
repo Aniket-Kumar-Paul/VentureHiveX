@@ -1,6 +1,6 @@
 "use client";
 
-import { useMockData } from "@/lib/MockProvider";
+import { useApp } from "@/lib/AppProvider";
 import { CampaignCard } from "@/components/CampaignCard";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -12,7 +12,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 const COLORS = ['#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#f97316'];
 
 export default function DashboardPage() {
-  const { currentUser, campaigns, investments } = useMockData();
+  const { currentUser, campaigns, investments } = useApp();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"investments" | "transactions" | "charts">("investments");
   const [categoryFilter, setCategoryFilter] = useState("All");

@@ -15,10 +15,6 @@ export const getSigner = async () => {
   if (provider instanceof ethers.BrowserProvider) {
     return await provider.getSigner();
   }
-  // If we want to strictly test with the env private key:
-  if (process.env.NEXT_PUBLIC_TEST_PRIVATE_KEY) {
-    return new ethers.Wallet(process.env.NEXT_PUBLIC_TEST_PRIVATE_KEY, provider);
-  }
   throw new Error("No wallet connected and no test key found.");
 };
 
