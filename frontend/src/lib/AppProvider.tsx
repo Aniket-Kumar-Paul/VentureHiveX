@@ -81,6 +81,16 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     if (typeof window !== "undefined" && (window as any).ethereum) {
       const handleAccountsChanged = (accounts: string[]) => {
         if (mode === 'real') {
+          if (accounts.length === 0) {
+            disconnectWallet();
+            return;
+          }
+          if (realUser && accounts[0] && realUser.address.toLowerCase() === accounts[0].toLowerCase()) {
+            return;
+          }
+          if (!realUser) {
+            return;
+          }
           // Force re-authentication on any account change or disconnect
           disconnectWallet();
         }
@@ -90,7 +100,44 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         (window as any).ethereum.removeListener("accountsChanged", handleAccountsChanged);
       };
     }
-  }, [mode]);
+  }, [mode, realUser]);
+
+  // Auto connect on mount
+  useEffect(() => {
+    const autoConnect = async () => {
+      const token = localStorage.getItem('token');
+      if (token && typeof window !== "undefined" && (window as any).ethereum) {
+        try {
+          const provider = new ethers.BrowserProvider((window as any).ethereum);
+          const accounts = await provider.send("eth_accounts", []);
+          if (accounts.length > 0) {
+            const fetchedProfile = await fetchUserProfile(token);
+            if (fetchedProfile && fetchedProfile.wallet_address.toLowerCase() === accounts[0].toLowerCase()) {
+              setMode('real');
+              setRealUser({
+                address: fetchedProfile.wallet_address,
+                role: fetchedProfile.role || "Investor",
+                name: fetchedProfile.name || "",
+                email: fetchedProfile.email || "",
+                description: fetchedProfile.description || "",
+                companyName: fetchedProfile.company_name,
+                companyUrl: fetchedProfile.company_url,
+                hasCompletedProfile: !!fetchedProfile.name,
+                gender: fetchedProfile.gender,
+                dob: fetchedProfile.dob ? new Date(fetchedProfile.dob).toISOString().split('T')[0] : undefined
+              });
+            } else {
+              localStorage.removeItem('token');
+            }
+          }
+        } catch (err) {
+          console.error("Auto connect failed", err);
+          localStorage.removeItem('token');
+        }
+      }
+    };
+    autoConnect();
+  }, []);
 
   const connectMockWallet = (address: string) => {
     setMode('mock');
@@ -165,9 +212,11 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
               name: fetchedProfile.name || "",
               email: fetchedProfile.email || "",
               description: fetchedProfile.description || "",
-              company_name: fetchedProfile.company_name,
-              company_url: fetchedProfile.company_url,
-              hasCompletedProfile: !!fetchedProfile.name
+              companyName: fetchedProfile.company_name,
+              companyUrl: fetchedProfile.company_url,
+              hasCompletedProfile: !!fetchedProfile.name,
+              gender: fetchedProfile.gender,
+              dob: fetchedProfile.dob ? new Date(fetchedProfile.dob).toISOString().split('T')[0] : undefined
             });
           } else {
             throw new Error("No profile data");
@@ -242,7 +291,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       toast.success("Campaign created successfully (Mock)!");
     } else {
       try {
-        toast.loading("Uploading metadata to IPFS...");
+        toast.loading("Uploading metadata to IPFS...", { id: "ipfs-upload" });
         // This normally requires file and metadata. We'll simulate the real IPFS call
         // Assuming we got auth token
         const token = localStorage.getItem('token') || '';
@@ -268,6 +317,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
           website: campaign.website,
         }, token);
 
+        toast.dismiss("ipfs-upload");
         toast.loading("Deploying smart contract...", { id: "deploy" });
         const signer = await getSigner();
         const factory = await getFactoryContract(signer);
@@ -292,9 +342,12 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
         toast.success("Campaign deployed successfully!", { id: "deploy" });
         
-        // Append locally or wait for indexer
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       } catch (error: any) {
-        toast.dismiss();
+        toast.dismiss("ipfs-upload");
+        toast.dismiss("deploy");
         console.error(error);
         toast.error("Deployment failed", { description: error.message });
       }

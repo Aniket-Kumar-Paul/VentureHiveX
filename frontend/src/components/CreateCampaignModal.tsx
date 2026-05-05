@@ -26,6 +26,7 @@ export function CreateCampaignModal({ isOpen, onClose }: Props) {
   const [longDesc, setLongDesc] = useState("");
   const [category, setCategory] = useState("Technology");
   const [thumbnail, setThumbnail] = useState("");
+  const [thumbnailFile, setThumbnailFile] = useState<File | undefined>(undefined);
   const [videoUrl, setVideoUrl] = useState("");
   const [website, setWebsite] = useState("");
 
@@ -70,7 +71,7 @@ export function CreateCampaignModal({ isOpen, onClose }: Props) {
       tokenSymbol,
       tokenAddress: `0xMockToken${Date.now()}`,
       amountRaised: 0,
-    });
+    }, thumbnailFile);
     
     // Reset and close
     setStep(0);
@@ -172,8 +173,10 @@ export function CreateCampaignModal({ isOpen, onClose }: Props) {
                       className="cursor-pointer file:cursor-pointer"
                       onChange={e => {
                         if (e.target.files && e.target.files[0]) {
-                          setThumbnail(URL.createObjectURL(e.target.files[0]));
-                          toast.success("Image selected (Mock IPFS upload ready).");
+                          const file = e.target.files[0];
+                          setThumbnailFile(file);
+                          setThumbnail(URL.createObjectURL(file));
+                          toast.success("Image selected (Ready for IPFS upload).");
                         }
                       }} 
                     />

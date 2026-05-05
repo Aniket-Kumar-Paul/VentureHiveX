@@ -57,6 +57,21 @@ export function ProfileModal({ isOpen, onClose }: Props) {
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 py-4">
+          <div className="grid grid-cols-3 gap-4 pb-4 border-b border-border/50">
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <Input value={currentUser.role || "N/A"} disabled className="bg-muted/50 cursor-not-allowed text-muted-foreground capitalize" />
+            </div>
+            <div className="space-y-2">
+              <Label>Gender</Label>
+              <Input value={currentUser.gender || "N/A"} disabled className="bg-muted/50 cursor-not-allowed text-muted-foreground capitalize" />
+            </div>
+            <div className="space-y-2">
+              <Label>Date of Birth</Label>
+              <Input value={currentUser.dob || "N/A"} disabled className="bg-muted/50 cursor-not-allowed text-muted-foreground" />
+            </div>
+          </div>
+          
           <div className="space-y-2">
             <Label htmlFor="edit-name">Full Name *</Label>
             <Input id="edit-name" required value={name} onChange={e => setName(e.target.value)} />

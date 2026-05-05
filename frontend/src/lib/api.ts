@@ -3,8 +3,31 @@ export const fetchCampaigns = async () => {
   try {
     const res = await fetch(`${apiUrl}/campaigns`);
     if (!res.ok) throw new Error("Failed to fetch campaigns");
-    const data = await res.json();
-    return data;
+    const json = await res.json();
+    if (json.data && Array.isArray(json.data)) {
+      return json.data.map((c: any) => ({
+        id: c.campaign_id,
+        creatorAddress: c.wallet_address,
+        title: c.title,
+        shortDescription: c.short_description || "",
+        longDescription: c.long_description || "",
+        category: c.category || "Unknown",
+        website: c.website || "",
+        thumbnailUrl: c.thumbnail || "https://images.unsplash.com/photo-1557682250-33bd709cbe85",
+        videoUrl: c.video_url || "",
+        goalAmount: parseFloat(c.goalAmount || "0"),
+        totalTokenSupply: parseFloat(c.totalTokenSupply || "0"),
+        pricePerToken: parseFloat(c.pricePerToken || "0"),
+        startDate: c.startTime,
+        endDate: c.endTime,
+        status: c.status,
+        tokenName: c.tokenName,
+        tokenSymbol: c.tokenSymbol,
+        tokenAddress: c.tokenAddress || "",
+        amountRaised: parseFloat(c.amountRaised || "0")
+      }));
+    }
+    return [];
   } catch (error) {
     console.error("Error fetching campaigns:", error);
     return [];
@@ -57,13 +80,20 @@ export const fetchUserProfile = async (token: string) => {
 
 export const updateUserProfile = async (userData: any, token: string) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  
+  const payload = {
+    ...userData,
+    company_name: userData.companyName,
+    company_url: userData.companyUrl,
+  };
+
   const res = await fetch(`${apiUrl}/users/profile`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${token}`
     },
-    body: JSON.stringify(userData)
+    body: JSON.stringify(payload)
   });
   if (!res.ok) throw new Error("Failed to update user profile");
   return await res.json();
