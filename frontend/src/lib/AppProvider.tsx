@@ -26,6 +26,7 @@ interface AppContextType {
   createCampaign: (campaign: Campaign, file?: File) => Promise<void>;
   updateCampaign: (campaign: Campaign) => void;
   investInCampaign: (campaignId: string, amount: number, tokenAddress?: string) => Promise<void>;
+  isInitializing: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -40,6 +41,7 @@ export const useApp = () => {
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [mode, setMode] = useState<AppMode>('mock');
+  const [isInitializing, setIsInitializing] = useState(true);
   
   // Real State
   const [realUser, setRealUser] = useState<User | null>(null);
@@ -135,6 +137,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
           localStorage.removeItem('token');
         }
       }
+      setIsInitializing(false);
     };
     autoConnect();
   }, []);
@@ -341,11 +344,25 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         toast.loading("Waiting for confirmation...", { id: "deploy" });
         await tx.wait();
 
-        toast.success("Campaign deployed successfully!", { id: "deploy" });
+        toast.loading("Syncing with blockchain indexer...", { id: "deploy" });
+        const currentLength = realCampaigns.length;
+        let synced = false;
         
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
+        for (let i = 0; i < 15; i++) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const freshCampaigns = await fetchRealCampaigns();
+          if (freshCampaigns && freshCampaigns.length > currentLength) {
+            setRealCampaigns(freshCampaigns);
+            synced = true;
+            break;
+          }
+        }
+
+        if (synced) {
+          toast.success("Campaign deployed and synced successfully!", { id: "deploy" });
+        } else {
+          toast.error("Campaign deployed but sync is delayed. Please refresh later.", { id: "deploy" });
+        }
       } catch (error: any) {
         toast.dismiss("ipfs-upload");
         toast.dismiss("deploy");
@@ -431,7 +448,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       updateUser,
       createCampaign,
       updateCampaign,
-      investInCampaign
+      investInCampaign,
+      isInitializing
     }}>
       {children}
     </AppContext.Provider>

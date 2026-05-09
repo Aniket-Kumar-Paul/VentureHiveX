@@ -15,7 +15,7 @@ export function Navbar() {
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   
-  const { currentUser, disconnectWallet } = useApp();
+  const { currentUser, disconnectWallet, isInitializing } = useApp();
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/60 backdrop-blur-md transition-colors">
@@ -35,7 +35,11 @@ export function Navbar() {
         </div>
         
         <div className="flex items-center gap-3">
-          {currentUser ? (
+          {isInitializing ? (
+            <Button disabled variant="outline" className="animate-pulse shadow-none border-dashed border-muted-foreground text-muted-foreground w-[130px]">
+              Loading...
+            </Button>
+          ) : currentUser ? (
             <div className="flex items-center gap-3">
               {!currentUser.hasCompletedProfile && (
                 <Button variant="secondary" size="sm" onClick={() => setIsSignupModalOpen(true)}>
