@@ -1,3 +1,5 @@
+import { ethers } from "ethers";
+
 export const fetchCampaigns = async () => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
   try {
@@ -15,16 +17,16 @@ export const fetchCampaigns = async () => {
         website: c.website || "",
         thumbnailUrl: c.thumbnail || "https://images.unsplash.com/photo-1557682250-33bd709cbe85",
         videoUrl: c.video_url || "",
-        goalAmount: parseFloat(c.goalAmount || "0"),
-        totalTokenSupply: parseFloat(c.totalTokenSupply || "0"),
-        pricePerToken: parseFloat(c.pricePerToken || "0"),
+        goalAmount: parseFloat(ethers.formatEther(c.goalAmount || "0")),
+        totalTokenSupply: parseFloat(ethers.formatEther(c.totalTokenSupply || "0")),
+        pricePerToken: parseFloat(ethers.formatEther(c.pricePerToken || "0")),
         startDate: c.startTime,
         endDate: c.endTime,
         status: c.status,
         tokenName: c.tokenName,
         tokenSymbol: c.tokenSymbol,
         tokenAddress: c.tokenAddress || "",
-        amountRaised: parseFloat(c.amountRaised || "0")
+        amountRaised: parseFloat(ethers.formatEther(c.amountRaised || "0"))
       }));
     }
     return [];

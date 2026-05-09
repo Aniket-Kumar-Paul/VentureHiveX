@@ -327,12 +327,13 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         const goalAmountWei = ethers.parseEther(campaign.goalAmount.toString());
         const startTimestamp = Math.floor(new Date(campaign.startDate).getTime() / 1000);
         const endTimestamp = Math.floor(new Date(campaign.endDate).getTime() / 1000);
+        const totalTokenSupplyWei = ethers.parseEther((campaign.totalTokenSupply || 1000000).toString());
         
         const tx = await factory.createCampaign(
             goalAmountWei,
             startTimestamp, // start
             endTimestamp, // end
-            campaign.totalTokenSupply || 1000000,
+            totalTokenSupplyWei,
             campaign.tokenSymbol + " Token",
             campaign.tokenSymbol || "TKN",
             metadataUpload.ipfsHash
@@ -392,12 +393,18 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       });
     } else {
       try {
-        if (!tokenAddress) throw new Error("No token address for campaign");
         toast.loading("Sending investment transaction...");
         const signer = await getSigner();
-        const contract = getCampaignContract(tokenAddress, signer);
+        const factory = await getFactoryContract(signer);
         
-        const tx = await contract.invest({ value: ethers.parseEther(amountInvested.toString()) });
+        const campaign = campaigns.find(c => c.id === campaignId);
+        if (!campaign) throw new Error("Campaign not found");
+        
+        const tokensReceived = amountInvested / campaign.pricePerToken;
+        const tokenAmountWei = ethers.parseEther(tokensReceived.toString());
+        const amountInvestedWei = ethers.parseEther(amountInvested.toString());
+
+        const tx = await factory.invest(campaign.id, tokenAmountWei, { value: amountInvestedWei });
         await tx.wait();
         toast.dismiss();
         toast.success("Investment successful!");
