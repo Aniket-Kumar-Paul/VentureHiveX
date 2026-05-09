@@ -80,12 +80,12 @@ export default function SingleCampaignPage() {
 
             <div className="mt-8 space-y-3 text-sm">
               <div className="flex justify-between py-2 border-b border-border/50">
-                <span className="text-muted-foreground">Start Date</span>
-                <span className="font-semibold">{new Date(campaign.startDate).toLocaleDateString()}</span>
+                <span className="text-muted-foreground">Start Date & Time</span>
+                <span className="font-semibold">{new Date(campaign.startDate).toLocaleString()}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-border/50">
-                <span className="text-muted-foreground">End Date</span>
-                <span className="font-semibold">{new Date(campaign.endDate).toLocaleDateString()}</span>
+                <span className="text-muted-foreground">End Date & Time</span>
+                <span className="font-semibold">{new Date(campaign.endDate).toLocaleString()}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-border/50">
                 <span className="text-muted-foreground">Token Symbol</span>
@@ -208,7 +208,7 @@ export default function SingleCampaignPage() {
           {campaign.website && (
             <div className="flex items-center gap-2 mt-4 text-primary hover:underline">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-              <a href={campaign.website} target="_blank" rel="noopener noreferrer">{campaign.website}</a>
+              <a href={campaign.website.startsWith('http') ? campaign.website : `https://${campaign.website}`} target="_blank" rel="noopener noreferrer">{campaign.website}</a>
             </div>
           )}
         </div>

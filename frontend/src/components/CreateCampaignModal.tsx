@@ -211,7 +211,7 @@ export function CreateCampaignModal({ isOpen, onClose }: Props) {
                   <p className="text-xs text-muted-foreground mt-2 px-1">
                     Auto-calculated Price Per Token: 
                     <strong className="text-primary ml-1">
-                      {(parseFloat(goalAmount || "0") / parseFloat(totalTokenSupply || "1") || 0).toFixed(4)} ETH
+                      {(parseFloat(goalAmount || "0") / parseFloat(totalTokenSupply || "1") || 0).toFixed(6)} ETH
                     </strong>
                   </p>
                 </div>
@@ -245,7 +245,7 @@ export function CreateCampaignModal({ isOpen, onClose }: Props) {
                     <div><span className="text-muted-foreground">Goal:</span> <span className="font-semibold">{parseFloat(goalAmount||"0").toLocaleString()} ETH</span></div>
                     <div><span className="text-muted-foreground">Supply:</span> <span className="font-semibold">{parseFloat(totalTokenSupply||"0").toLocaleString()}</span></div>
                     <div><span className="text-muted-foreground">Token:</span> <span className="font-semibold">{tokenName} ({tokenSymbol})</span></div>
-                    <div><span className="text-muted-foreground">Price/Token:</span> <span className="font-semibold text-primary">{(parseFloat(goalAmount||"0") / parseFloat(totalTokenSupply||"1") || 0).toFixed(4)} ETH</span></div>
+                    <div><span className="text-muted-foreground">Price/Token:</span> <span className="font-semibold text-primary">{(parseFloat(goalAmount||"0") / parseFloat(totalTokenSupply||"1") || 0).toFixed(6)} ETH</span></div>
                   </div>
                 </div>
               </motion.div>

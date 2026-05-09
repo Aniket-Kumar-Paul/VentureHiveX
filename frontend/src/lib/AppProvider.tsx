@@ -334,7 +334,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
             startTimestamp, // start
             endTimestamp, // end
             totalTokenSupplyWei,
-            campaign.tokenSymbol + " Token",
+            campaign.tokenName || campaign.tokenSymbol + " Token",
             campaign.tokenSymbol || "TKN",
             metadataUpload.ipfsHash
         );
