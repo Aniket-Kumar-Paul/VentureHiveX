@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 
 export const fetchCampaigns = async () => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
   try {
     const res = await fetch(`${apiUrl}/campaigns`);
     if (!res.ok) throw new Error("Failed to fetch campaigns");
@@ -38,7 +38,7 @@ export const fetchCampaigns = async () => {
 };
 
 export const fetchCampaignById = async (id: string) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
   try {
     const res = await fetch(`${apiUrl}/campaigns/${id}`);
     if (!res.ok) throw new Error("Failed to fetch campaign details");
@@ -75,14 +75,14 @@ export const fetchCampaignById = async (id: string) => {
 // --- Auth Endpoints ---
 
 export const fetchNonce = async (address: string) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
   const res = await fetch(`${apiUrl}/auth/nonce?walletAddress=${address}`);
   if (!res.ok) throw new Error("Failed to fetch nonce");
   return await res.json();
 };
 
 export const verifySignature = async (address: string, signature: string) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
   const res = await fetch(`${apiUrl}/auth/verify`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -95,7 +95,7 @@ export const verifySignature = async (address: string, signature: string) => {
 // --- Auth Endpoints ---
 
 export const fetchUserProfile = async (token: string) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
   const res = await fetch(`${apiUrl}/users/profile`, {
     headers: { "Authorization": `Bearer ${token}` }
   });
@@ -104,7 +104,7 @@ export const fetchUserProfile = async (token: string) => {
 };
 
 export const updateUserProfile = async (userData: any, token: string) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
   
   const payload = {
     ...userData,
@@ -127,7 +127,7 @@ export const updateUserProfile = async (userData: any, token: string) => {
 // --- IPFS Endpoints ---
 
 export const uploadFileToIPFS = async (file: File, token: string) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
   const formData = new FormData();
   formData.append("file", file);
   
@@ -144,7 +144,7 @@ export const uploadFileToIPFS = async (file: File, token: string) => {
 };
 
 export const uploadMetadataToIPFS = async (metadata: any, token: string) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
   
   const res = await fetch(`${apiUrl}/ipfs/metadata`, {
     method: "POST",

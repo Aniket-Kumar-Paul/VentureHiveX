@@ -56,6 +56,11 @@ export default function SingleCampaignPage() {
   
   const hasWithdrawn = investments.some(inv => inv.campaignId === campaign.id && inv.type === 'WITHDRAW');
 
+  const myCampaignInvestments = investments.filter(inv => inv.campaignId === campaign.id && inv.investorAddress === currentUser?.address);
+  const myNetInvested = myCampaignInvestments.reduce((sum, inv) => sum + inv.amountInvested, 0);
+  const myNetTokens = myCampaignInvestments.reduce((sum, inv) => sum + inv.tokensReceived, 0);
+  const hasRefunded = myCampaignInvestments.some(inv => inv.type === 'REFUND');
+
   return (
     <div className="container mx-auto px-4 py-8 pt-0">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col lg:flex-row gap-8 items-start">
@@ -103,6 +108,21 @@ export default function SingleCampaignPage() {
               </div>
             </div>
 
+            {/* INVESTOR STATS */}
+            {isInvestor && myNetInvested > 0 && (
+              <div className="mt-6 p-4 rounded-xl border border-primary/20 bg-primary/5">
+                <h4 className="text-sm font-semibold text-primary mb-2 tracking-wide uppercase">Your Investment</h4>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-muted-foreground text-sm">Amount Invested</span>
+                  <span className="font-bold">{myNetInvested.toLocaleString(undefined, { maximumFractionDigits: 4 })} ETH</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground text-sm">Tokens Owned</span>
+                  <span className="font-bold">{myNetTokens.toLocaleString(undefined, { maximumFractionDigits: 4 })} {campaign.tokenSymbol}</span>
+                </div>
+              </div>
+            )}
+
             {/* ACTION BUTTONS */}
             <div className="mt-8">
               {!currentUser ? (
@@ -125,9 +145,15 @@ export default function SingleCampaignPage() {
                     </div>
                   )}
                   {campaign.status?.toUpperCase() === "FAILED" && (
-                    <Button variant="destructive" onClick={handleRefund} className="w-full" size="lg">
-                      Refund Tokens
-                    </Button>
+                    myNetInvested > 0 ? (
+                      <Button onClick={handleRefund} className="w-full bg-red-600 hover:bg-red-700 text-white" size="lg">
+                        Refund Tokens
+                      </Button>
+                    ) : hasRefunded ? (
+                      <div className="text-center p-3 text-green-500 font-bold border border-green-500/20 bg-green-500/10 rounded-xl">
+                        Tokens Successfully Refunded
+                      </div>
+                    ) : null
                   )}
                 </div>
               ) : isCreator ? (
