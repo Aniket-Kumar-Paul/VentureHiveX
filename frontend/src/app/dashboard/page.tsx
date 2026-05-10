@@ -122,7 +122,7 @@ export default function DashboardPage() {
           <div className="bg-gradient-to-br from-primary/30 to-purple-500/20 border border-white/20 p-8 rounded-3xl relative overflow-hidden backdrop-blur-2xl shadow-xl ring-1 ring-white/10">
             <div className="relative z-10 flex flex-col gap-2">
               <h2 className="text-lg font-medium text-muted-foreground">Total Portfolio Value (Invested)</h2>
-              <div className="text-5xl font-bold tracking-tighter text-foreground">{totalAmountInvested.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETH</div>
+              <div className="text-5xl font-bold tracking-tighter text-foreground">{totalAmountInvested.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} ETH</div>
             </div>
             {/* Background design */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />

@@ -291,6 +291,19 @@ export const startIndexer = () => {
           txHash: event?.log?.transactionHash || event?.transactionHash || null
         }
       });
+
+      // Update Campaign raised amount
+      const campaignData = await factoryContract.getCampaign(campaignId);
+      const campaignRecord = await prisma.campaign.findUnique({ where: { campaign_id: campaignId.toString() } });
+      const currentTokenAddress = campaignRecord?.tokenAddress || '';
+
+      await prisma.campaign.update({
+        where: { campaign_id: campaignId.toString() },
+        data: {
+          amountRaised: campaignData.amountRaised.toString(),
+          mintedSupply: currentTokenAddress ? (await fetchTokenSupply(currentTokenAddress, provider)).toString() : "0" // If you need exact supply
+        }
+      });
     } catch (error) {
       console.error(`[Indexer] Error syncing Refunded event:`, error);
     }

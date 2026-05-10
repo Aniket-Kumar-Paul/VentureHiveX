@@ -463,6 +463,25 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
             const updatedCampaign = freshCampaigns.find(c => c.id === campaignId);
             if (updatedCampaign && updatedCampaign.amountRaised > currentAmountRaised) {
               setRealCampaigns(freshCampaigns);
+              
+              const token = localStorage.getItem('token');
+              if (token) {
+                const freshProfile = await fetchUserProfile(token);
+                if (freshProfile && freshProfile.transactions) {
+                  const mappedInvestments = freshProfile.transactions.map((t: any) => ({
+                    id: t.id,
+                    investorAddress: t.wallet_address,
+                    campaignId: t.campaign_id,
+                    amountInvested: t.type === 'REFUND' || t.type === 'WITHDRAW' ? -parseFloat(ethers.formatEther(t.amount)) : parseFloat(ethers.formatEther(t.amount)),
+                    tokensReceived: t.type === 'REFUND' || t.type === 'WITHDRAW' ? -parseFloat(ethers.formatEther(t.tokens)) : parseFloat(ethers.formatEther(t.tokens)),
+                    dateInvested: t.createdAt,
+                    type: t.type,
+                    txHash: t.txHash
+                  }));
+                  setRealInvestments(mappedInvestments);
+                }
+              }
+
               synced = true;
               break;
             }
@@ -518,6 +537,12 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
                 txHash: t.txHash
               }));
               setRealInvestments(mappedInvestments);
+              
+              const freshCampaigns = await fetchRealCampaigns();
+              if (freshCampaigns && Array.isArray(freshCampaigns)) {
+                setRealCampaigns(freshCampaigns);
+              }
+
               synced = true;
               break;
             }
