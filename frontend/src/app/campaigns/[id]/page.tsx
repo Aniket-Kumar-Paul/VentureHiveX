@@ -12,7 +12,7 @@ import { motion } from "framer-motion";
 export default function SingleCampaignPage() {
   const params = useParams();
   const router = useRouter();
-  const { campaigns, currentUser } = useApp();
+  const { campaigns, currentUser, refundCampaign } = useApp();
   const id = params?.id as string;
   const campaign = campaigns.find((c) => c.id === id);
 
@@ -51,7 +51,7 @@ export default function SingleCampaignPage() {
   const isCreator = currentUser?.address === campaign.creatorAddress;
   const isInvestor = currentUser?.role === "Investor";
 
-  const handleRefund = () => toast.success("Refunding tokens via smart contract... (Mocked)");
+  const handleRefund = () => refundCampaign(campaign.id);
   const handleWithdraw = () => toast.success("Withdrawing funds via smart contract... (Mocked)");
 
   return (

@@ -27,6 +27,7 @@ model User {
 
   campaigns   Campaign[]
   investments Investor[]
+  transactions Transaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -60,6 +61,7 @@ model Campaign {
   tokenAddress String? // Deployed ERC20 address
 
   investments Investor[]
+  transactions Transaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -79,4 +81,18 @@ model Investor {
   updatedAt DateTime @updatedAt
 
   @@id([wallet_address, campaign_id])
+}
+
+model Transaction {
+  id             String   @id @default(uuid())
+  wallet_address String
+  campaign_id    String
+  type           String   // 'INVEST', 'REFUND', 'WITHDRAW'
+  amount         String   // Wei/Eth amount
+  tokens         String   // Token amount
+  txHash         String?
+  createdAt      DateTime @default(now())
+
+  user     User     @relation(fields: [wallet_address], references: [wallet_address])
+  campaign Campaign @relation(fields: [campaign_id], references: [campaign_id])
 }

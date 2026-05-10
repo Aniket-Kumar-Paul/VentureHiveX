@@ -14,7 +14,8 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
       where: { wallet_address: walletAddress },
       include: {
         campaigns: true,
-        investments: true
+        investments: true,
+        transactions: true
       }
     });
 

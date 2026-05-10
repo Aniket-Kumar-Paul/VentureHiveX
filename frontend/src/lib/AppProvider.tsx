@@ -26,6 +26,7 @@ interface AppContextType {
   createCampaign: (campaign: Campaign, file?: File) => Promise<void>;
   updateCampaign: (campaign: Campaign) => void;
   investInCampaign: (campaignId: string, amount: number, tokenAddress?: string) => Promise<void>;
+  refundCampaign: (campaignId: string) => Promise<void>;
   isInitializing: boolean;
 }
 
@@ -128,6 +129,19 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
                 gender: fetchedProfile.gender,
                 dob: fetchedProfile.dob ? new Date(fetchedProfile.dob).toISOString().split('T')[0] : undefined
               });
+              if (fetchedProfile.transactions) {
+                const mappedInvestments = fetchedProfile.transactions.map((t: any) => ({
+                  id: t.id,
+                  investorAddress: t.wallet_address,
+                  campaignId: t.campaign_id,
+                  amountInvested: t.type === 'REFUND' || t.type === 'WITHDRAW' ? -parseFloat(ethers.formatEther(t.amount)) : parseFloat(ethers.formatEther(t.amount)),
+                  tokensReceived: t.type === 'REFUND' || t.type === 'WITHDRAW' ? -parseFloat(ethers.formatEther(t.tokens)) : parseFloat(ethers.formatEther(t.tokens)),
+                  dateInvested: t.createdAt,
+                  type: t.type,
+                  txHash: t.txHash
+                }));
+                setRealInvestments(mappedInvestments);
+              }
             } else {
               localStorage.removeItem('token');
             }
@@ -221,6 +235,19 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
               gender: fetchedProfile.gender,
               dob: fetchedProfile.dob ? new Date(fetchedProfile.dob).toISOString().split('T')[0] : undefined
             });
+            if (fetchedProfile.transactions) {
+              const mappedInvestments = fetchedProfile.transactions.map((t: any) => ({
+                id: t.id,
+                investorAddress: t.wallet_address,
+                campaignId: t.campaign_id,
+                amountInvested: t.type === 'REFUND' || t.type === 'WITHDRAW' ? -parseFloat(ethers.formatEther(t.amount)) : parseFloat(ethers.formatEther(t.amount)),
+                tokensReceived: t.type === 'REFUND' || t.type === 'WITHDRAW' ? -parseFloat(ethers.formatEther(t.tokens)) : parseFloat(ethers.formatEther(t.tokens)),
+                dateInvested: t.createdAt,
+                type: t.type,
+                txHash: t.txHash
+              }));
+              setRealInvestments(mappedInvestments);
+            }
           } else {
             throw new Error("No profile data");
           }
@@ -454,6 +481,61 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       }
     }
   };
+  const refundCampaign = async (campaignId: string) => {
+    if (!currentUser) return;
+    
+    if (mode === 'mock') {
+      toast.success("Successfully refunded! (Mock)");
+    } else {
+      try {
+        toast.loading("Sending refund transaction...", { id: "refund" });
+        const signer = await getSigner();
+        const factory = await getFactoryContract(signer);
+        
+        const tx = await factory.refund(campaignId);
+        toast.loading("Waiting for confirmation...", { id: "refund" });
+        await tx.wait();
+        
+        toast.loading("Syncing with blockchain indexer...", { id: "refund" });
+        let synced = false;
+        
+        for (let i = 0; i < 15; i++) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const token = localStorage.getItem('token');
+          if (!token) break;
+          const freshProfile = await fetchUserProfile(token);
+          if (freshProfile && freshProfile.transactions) {
+            const hasRefund = freshProfile.transactions.some((t: any) => t.campaign_id === campaignId && t.type === 'REFUND');
+            if (hasRefund) {
+              const mappedInvestments = freshProfile.transactions.map((t: any) => ({
+                id: t.id,
+                investorAddress: t.wallet_address,
+                campaignId: t.campaign_id,
+                amountInvested: t.type === 'REFUND' || t.type === 'WITHDRAW' ? -parseFloat(ethers.formatEther(t.amount)) : parseFloat(ethers.formatEther(t.amount)),
+                tokensReceived: t.type === 'REFUND' || t.type === 'WITHDRAW' ? -parseFloat(ethers.formatEther(t.tokens)) : parseFloat(ethers.formatEther(t.tokens)),
+                dateInvested: t.createdAt,
+                type: t.type,
+                txHash: t.txHash
+              }));
+              setRealInvestments(mappedInvestments);
+              synced = true;
+              break;
+            }
+          }
+        }
+
+        if (synced) {
+          toast.success("Refund successful and synced!", { id: "refund" });
+        } else {
+          toast.error("Refund successful but sync is delayed. Please refresh later.", { id: "refund" });
+        }
+      } catch (error: any) {
+        toast.dismiss("refund");
+        console.error(error);
+        toast.error("Refund failed", { description: error.message });
+      }
+    }
+  };
 
   return (
     <AppContext.Provider value={{
@@ -471,6 +553,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       createCampaign,
       updateCampaign,
       investInCampaign,
+      refundCampaign,
       isInitializing
     }}>
       {children}

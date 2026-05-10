@@ -44,6 +44,8 @@ export interface Investment {
   amountInvested: number;
   tokensReceived: number;
   dateInvested: string;
+  type?: string;
+  txHash?: string;
 }
 
 // Dummy Data

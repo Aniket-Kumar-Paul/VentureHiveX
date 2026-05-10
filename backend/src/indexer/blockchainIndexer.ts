@@ -128,6 +128,24 @@ export const startIndexer = () => {
         });
       }
 
+      // Get existing Investor to accumulate amounts
+      const existingInvestor = await prisma.investor.findUnique({
+        where: {
+          wallet_address_campaign_id: {
+            wallet_address: investorAddress,
+            campaign_id: campaignId.toString()
+          }
+        }
+      });
+
+      const newAmountInvested = existingInvestor 
+        ? (BigInt(existingInvestor.amount_invested) + amountInvested).toString()
+        : amountInvested.toString();
+        
+      const newTokensPurchased = existingInvestor
+        ? (BigInt(existingInvestor.tokens_purchased) + tokensTokensReceived).toString()
+        : tokensTokensReceived.toString();
+
       // Record Investment
       await prisma.investor.upsert({
         where: {
@@ -137,14 +155,26 @@ export const startIndexer = () => {
           }
         },
         update: {
-          amount_invested: { set: amountInvested.toString() }, // Depending on if it's cumulative in event
-          tokens_purchased: { set: tokensTokensReceived.toString() }
+          amount_invested: { set: newAmountInvested },
+          tokens_purchased: { set: newTokensPurchased }
         },
         create: {
           wallet_address: investorAddress,
           campaign_id: campaignId.toString(),
-          amount_invested: amountInvested.toString(),
-          tokens_purchased: tokensTokensReceived.toString()
+          amount_invested: newAmountInvested,
+          tokens_purchased: newTokensPurchased
+        }
+      });
+
+      // Record Transaction
+      await prisma.transaction.create({
+        data: {
+          wallet_address: investorAddress,
+          campaign_id: campaignId.toString(),
+          type: 'INVEST',
+          amount: amountInvested.toString(),
+          tokens: tokensTokensReceived.toString(),
+          txHash: event?.log?.transactionHash || event?.transactionHash || null
         }
       });
 
@@ -210,6 +240,18 @@ export const startIndexer = () => {
         where: { campaign_id: campaignId.toString() },
         data: { status: 'FUNDED' }
       });
+
+      const creatorAddress = creator.toLowerCase();
+      await prisma.transaction.create({
+        data: {
+          wallet_address: creatorAddress,
+          campaign_id: campaignId.toString(),
+          type: 'WITHDRAW',
+          amount: amount.toString(),
+          tokens: '0',
+          txHash: event?.log?.transactionHash || event?.transactionHash || null
+        }
+      });
     } catch (error) {
       console.error(`[Indexer] Error syncing FundsWithdrawn event:`, error);
     }
@@ -236,6 +278,17 @@ export const startIndexer = () => {
         data: {
            amount_invested: '0',
            tokens_purchased: '0'
+        }
+      });
+
+      await prisma.transaction.create({
+        data: {
+          wallet_address: investorAddress,
+          campaign_id: campaignId.toString(),
+          type: 'REFUND',
+          amount: amountRefuned.toString(),
+          tokens: tokensBurned.toString(),
+          txHash: event?.log?.transactionHash || event?.transactionHash || null
         }
       });
     } catch (error) {
