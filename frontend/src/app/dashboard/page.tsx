@@ -16,6 +16,17 @@ export default function DashboardPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"investments" | "transactions" | "charts">("investments");
   const [categoryFilter, setCategoryFilter] = useState("All");
+  const [txnSortConfig, setTxnSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+  const [txnStatusFilter, setTxnStatusFilter] = useState("All");
+  const [txnOperationFilter, setTxnOperationFilter] = useState("All");
+
+  const requestSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (txnSortConfig && txnSortConfig.key === key && txnSortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setTxnSortConfig({ key, direction });
+  };
 
   if (!currentUser) {
     return (
@@ -81,6 +92,39 @@ export default function DashboardPage() {
     }, [] as { id: string, timestamp: number, fullDate: string, total: number }[]);
 
   const filteredSummary = investmentSummary.filter(i => categoryFilter === "All" || i.campaign.category === categoryFilter);
+
+  let processedTransactions = [...myInvestments].map(inv => {
+    const c = campaigns.find(x => x.id === inv.campaignId);
+    return { ...inv, campaign: c };
+  }).filter(item => item.campaign !== undefined);
+
+  if (txnStatusFilter !== "All") {
+    processedTransactions = processedTransactions.filter(item => item.campaign!.status === txnStatusFilter);
+  }
+
+  if (txnOperationFilter !== "All") {
+    processedTransactions = processedTransactions.filter(item => (item.type || "INVEST") === txnOperationFilter);
+  }
+
+  if (txnSortConfig !== null) {
+    processedTransactions.sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+      switch (txnSortConfig.key) {
+        case "campaign": aValue = a.campaign!.title.toLowerCase(); bValue = b.campaign!.title.toLowerCase(); break;
+        case "token": aValue = a.campaign!.tokenSymbol.toLowerCase(); bValue = b.campaign!.tokenSymbol.toLowerCase(); break;
+        case "tokensReceived": aValue = a.tokensReceived; bValue = b.tokensReceived; break;
+        case "amountInvested": aValue = a.amountInvested; bValue = b.amountInvested; break;
+        case "dateInvested": aValue = new Date(a.dateInvested).getTime(); bValue = new Date(b.dateInvested).getTime(); break;
+        case "operation": aValue = (a.type || "INVEST").toLowerCase(); bValue = (b.type || "INVEST").toLowerCase(); break;
+        case "status": aValue = a.campaign!.status.toLowerCase(); bValue = b.campaign!.status.toLowerCase(); break;
+        default: return 0;
+      }
+      if (aValue < bValue) return txnSortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return txnSortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -180,33 +224,85 @@ export default function DashboardPage() {
 
           {activeTab === "transactions" && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <h2 className="text-2xl font-bold tracking-tight border-b border-border pb-4">All Transactions</h2>
-              {myInvestments.length > 0 ? (
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-border pb-4">
+                <h2 className="text-2xl font-bold tracking-tight">All Transactions</h2>
+                <div className="flex flex-wrap items-center gap-4 mt-4 sm:mt-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Operation:</span>
+                    <select 
+                      value={txnOperationFilter} 
+                      onChange={(e) => setTxnOperationFilter(e.target.value)}
+                      className="bg-card border border-border text-sm rounded-lg focus:ring-primary focus:border-primary block p-2 backdrop-blur-md transition-colors"
+                    >
+                      <option value="All">All</option>
+                      {Array.from(new Set(myInvestments.map(i => i.type || "INVEST"))).map(type => (
+                        <option key={type} value={type as string}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Status:</span>
+                    <select 
+                      value={txnStatusFilter} 
+                      onChange={(e) => setTxnStatusFilter(e.target.value)}
+                      className="bg-card border border-border text-sm rounded-lg focus:ring-primary focus:border-primary block p-2 backdrop-blur-md transition-colors"
+                    >
+                      <option value="All">All</option>
+                      {Array.from(new Set(myInvestments.map(i => campaigns.find(c => c.id === i.campaignId)?.status).filter(Boolean))).map(status => (
+                        <option key={status} value={status as string}>{status}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {processedTransactions.length > 0 ? (
                 <div className="overflow-x-auto border border-border rounded-xl">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-muted/30 backdrop-blur-md border-b border-white/10 uppercase text-muted-foreground text-xs shadow-sm ring-1 ring-white/5">
+                  <thead className="bg-muted/30 backdrop-blur-md border-b border-white/10 uppercase text-muted-foreground text-xs shadow-sm ring-1 ring-white/5 select-none">
                     <tr>
-                      <th className="px-6 py-4 font-semibold">Campaign</th>
-                      <th className="px-6 py-4 font-semibold">Token</th>
-                      <th className="px-6 py-4 font-semibold">Tokens Received</th>
-                      <th className="px-6 py-4 font-semibold">Amount ETH</th>
-                      <th className="px-6 py-4 font-semibold">Date</th>
-                      <th className="px-6 py-4 font-semibold">Status</th>
+                      <th className="px-6 py-4 font-semibold cursor-pointer hover:text-foreground transition-colors" onClick={() => requestSort('campaign')}>
+                        Campaign {txnSortConfig?.key === 'campaign' ? (txnSortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
+                      <th className="px-6 py-4 font-semibold cursor-pointer hover:text-foreground transition-colors" onClick={() => requestSort('token')}>
+                        Token {txnSortConfig?.key === 'token' ? (txnSortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
+                      <th className="px-6 py-4 font-semibold cursor-pointer hover:text-foreground transition-colors" onClick={() => requestSort('tokensReceived')}>
+                        Tokens Received {txnSortConfig?.key === 'tokensReceived' ? (txnSortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
+                      <th className="px-6 py-4 font-semibold cursor-pointer hover:text-foreground transition-colors" onClick={() => requestSort('amountInvested')}>
+                        Amount ETH {txnSortConfig?.key === 'amountInvested' ? (txnSortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
+                      <th className="px-6 py-4 font-semibold cursor-pointer hover:text-foreground transition-colors" onClick={() => requestSort('dateInvested')}>
+                        Date {txnSortConfig?.key === 'dateInvested' ? (txnSortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
+                      <th className="px-6 py-4 font-semibold cursor-pointer hover:text-foreground transition-colors" onClick={() => requestSort('operation')}>
+                        Operation {txnSortConfig?.key === 'operation' ? (txnSortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
+                      <th className="px-6 py-4 font-semibold cursor-pointer hover:text-foreground transition-colors" onClick={() => requestSort('status')}>
+                        Status {txnSortConfig?.key === 'status' ? (txnSortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/50">
-                    {myInvestments.map((inv) => {
-                      const c = campaigns.find(x => x.id === inv.campaignId);
-                      if (!c) return null;
+                    {processedTransactions.map((item) => {
+                      const c = item.campaign!;
                       return (
-                        <tr key={inv.id} className="hover:bg-muted/20 transition-colors">
+                        <tr key={item.id} className="hover:bg-muted/20 transition-colors">
                           <td className="px-6 py-4 font-medium text-primary hover:underline">
                             <Link href={`/campaigns/${c.id}`}>{c.title}</Link>
                           </td>
                           <td className="px-6 py-4 font-semibold">{c.tokenSymbol}</td>
-                          <td className="px-6 py-4">{inv.tokensReceived.toLocaleString()}</td>
-                          <td className="px-6 py-4 font-medium">{inv.amountInvested.toLocaleString()} ETH</td>
-                          <td className="px-6 py-4 text-muted-foreground">{new Date(inv.dateInvested).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</td>
+                          <td className="px-6 py-4">{item.tokensReceived.toLocaleString()}</td>
+                          <td className="px-6 py-4 font-medium">{item.amountInvested.toLocaleString()} ETH</td>
+                          <td className="px-6 py-4 text-muted-foreground">{new Date(item.dateInvested).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
+                              (item.type || 'INVEST') === 'INVEST' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' : 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
+                            }`}>
+                              {item.type || "INVEST"}
+                            </span>
+                          </td>
                           <td className="px-6 py-4">
                             <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs font-semibold">
                               {c.status}
@@ -218,9 +314,9 @@ export default function DashboardPage() {
                   </tbody>
                 </table>
               </div>
-            ) : (
-              <p className="text-muted-foreground">No transactions found.</p>
-            )}
+              ) : (
+                <p className="text-muted-foreground">No transactions found.</p>
+              )}
             </div>
           )}
 
