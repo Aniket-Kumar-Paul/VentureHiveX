@@ -46,7 +46,15 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
       <div className="p-5 flex flex-col gap-3">
         <div>
           <h3 className="text-lg font-bold tracking-tight line-clamp-1">{campaign.title}</h3>
-          <p className="text-sm text-muted-foreground">{campaign.category}</p>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-sm text-muted-foreground">{campaign.category}</span>
+            {campaign.companyName && (
+              <>
+                <span className="text-muted-foreground/40">•</span>
+                <span className="text-sm font-medium text-primary">{campaign.companyName}</span>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Progress Bar */}

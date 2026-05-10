@@ -12,7 +12,7 @@ import { motion } from "framer-motion";
 export default function SingleCampaignPage() {
   const params = useParams();
   const router = useRouter();
-  const { campaigns, currentUser, refundCampaign } = useApp();
+  const { campaigns, currentUser, refundCampaign, withdrawFunds } = useApp();
   const id = params?.id as string;
   const campaign = campaigns.find((c) => c.id === id);
 
@@ -52,7 +52,7 @@ export default function SingleCampaignPage() {
   const isInvestor = currentUser?.role === "Investor";
 
   const handleRefund = () => refundCampaign(campaign.id);
-  const handleWithdraw = () => toast.success("Withdrawing funds via smart contract... (Mocked)");
+  const handleWithdraw = () => withdrawFunds(campaign.id);
 
   return (
     <div className="container mx-auto px-4 py-8 pt-0">
@@ -161,10 +161,17 @@ export default function SingleCampaignPage() {
         {/* Right Section (Bigger): Details */}
         <div className="lg:w-2/3 order-1 lg:order-2 flex flex-col gap-8">
           <div>
-            <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold tracking-wide mb-3">
-              {campaign.category}
-            </span>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tighter mb-4">{campaign.title}</h1>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold tracking-wide">
+                {campaign.category}
+              </span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tighter mb-2">{campaign.title}</h1>
+            {campaign.companyName && (
+              <div className="text-lg font-medium text-muted-foreground flex items-center gap-2 mb-4">
+                by <span className="text-primary font-bold">{campaign.companyName}</span>
+              </div>
+            )}
             <p className="text-xl text-muted-foreground leading-relaxed">
               {campaign.shortDescription}
             </p>

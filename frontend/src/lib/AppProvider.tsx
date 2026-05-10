@@ -27,6 +27,7 @@ interface AppContextType {
   updateCampaign: (campaign: Campaign) => void;
   investInCampaign: (campaignId: string, amount: number, tokenAddress?: string) => Promise<void>;
   refundCampaign: (campaignId: string) => Promise<void>;
+  withdrawFunds: (campaignId: string) => Promise<void>;
   isInitializing: boolean;
 }
 
@@ -562,6 +563,62 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const withdrawFunds = async (campaignId: string) => {
+    if (!currentUser) return;
+    
+    if (mode === 'mock') {
+      toast.success("Successfully withdrawn funds! (Mock)");
+    } else {
+      try {
+        toast.loading("Sending withdraw transaction...", { id: "withdraw" });
+        const signer = await getSigner();
+        const factory = await getFactoryContract(signer);
+        
+        const tx = await factory.withdraw(campaignId);
+        toast.loading("Waiting for confirmation...", { id: "withdraw" });
+        await tx.wait();
+        
+        toast.loading("Syncing with blockchain indexer...", { id: "withdraw" });
+        let synced = false;
+        
+        for (let i = 0; i < 15; i++) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const token = localStorage.getItem('token');
+          if (!token) break;
+          const freshProfile = await fetchUserProfile(token);
+          if (freshProfile && freshProfile.transactions) {
+            const hasWithdraw = freshProfile.transactions.some((t: any) => t.campaign_id === campaignId && t.type === 'WITHDRAW');
+            if (hasWithdraw) {
+              const mappedInvestments = freshProfile.transactions.map((t: any) => ({
+                id: t.id,
+                investorAddress: t.wallet_address,
+                campaignId: t.campaign_id,
+                amountInvested: t.type === 'REFUND' || t.type === 'WITHDRAW' ? -parseFloat(ethers.formatEther(t.amount)) : parseFloat(ethers.formatEther(t.amount)),
+                tokensReceived: t.type === 'REFUND' || t.type === 'WITHDRAW' ? -parseFloat(ethers.formatEther(t.tokens)) : parseFloat(ethers.formatEther(t.tokens)),
+                dateInvested: t.createdAt,
+                type: t.type,
+                txHash: t.txHash
+              }));
+              setRealInvestments(mappedInvestments);
+              synced = true;
+              break;
+            }
+          }
+        }
+
+        if (synced) {
+          toast.success("Withdraw successful and synced!", { id: "withdraw" });
+        } else {
+          toast.error("Withdraw successful but sync is delayed. Please refresh later.", { id: "withdraw" });
+        }
+      } catch (error: any) {
+        toast.dismiss("withdraw");
+        console.error(error);
+        toast.error("Withdraw failed", { description: error.message });
+      }
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       mode,
@@ -579,6 +636,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       updateCampaign,
       investInCampaign,
       refundCampaign,
+      withdrawFunds,
       isInitializing
     }}>
       {children}

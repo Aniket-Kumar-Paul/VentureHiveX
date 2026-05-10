@@ -10,6 +10,7 @@ export const fetchCampaigns = async () => {
       return json.data.map((c: any) => ({
         id: c.campaign_id,
         creatorAddress: c.wallet_address,
+        companyName: c.creator?.company_name || "",
         title: c.title,
         shortDescription: c.short_description || "",
         longDescription: c.long_description || "",
@@ -41,8 +42,30 @@ export const fetchCampaignById = async (id: string) => {
   try {
     const res = await fetch(`${apiUrl}/campaigns/${id}`);
     if (!res.ok) throw new Error("Failed to fetch campaign details");
-    const data = await res.json();
-    return data;
+    const c = await res.json();
+    return {
+        id: c.campaign_id,
+        creatorAddress: c.wallet_address,
+        companyName: c.creator?.company_name || "",
+        title: c.title,
+        shortDescription: c.short_description || "",
+        longDescription: c.long_description || "",
+        category: c.category || "Unknown",
+        website: c.website || "",
+        thumbnailUrl: c.thumbnail || "https://images.unsplash.com/photo-1557682250-33bd709cbe85",
+        videoUrl: c.video_url || "",
+        goalAmount: parseFloat(ethers.formatEther(c.goalAmount || "0")),
+        totalTokenSupply: parseFloat(ethers.formatEther(c.totalTokenSupply || "0")),
+        pricePerToken: parseFloat(ethers.formatEther(c.pricePerToken || "0")),
+        startDate: c.startTime,
+        endDate: c.endTime,
+        status: c.status,
+        tokenName: c.tokenName,
+        tokenSymbol: c.tokenSymbol,
+        tokenAddress: c.tokenAddress || "",
+        amountRaised: parseFloat(ethers.formatEther(c.amountRaised || "0")),
+        investments: c.investments || []
+    };
   } catch (error) {
     console.error("Error fetching campaign details:", error);
     return null;

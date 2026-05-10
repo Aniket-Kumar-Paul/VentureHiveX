@@ -35,6 +35,7 @@ export interface Campaign {
   tokenSymbol: string;
   tokenAddress: string;
   amountRaised: number;
+  companyName?: string;
 }
 
 export interface Investment {
@@ -56,8 +57,9 @@ export const mockCampaigns: Campaign[] = [
     title: "EcoTech Innovators",
     shortDescription: "Revolutionizing green energy with smart AI solutions.",
     longDescription: "We are building an AI-driven platform to optimize solar power grids and reduce energy waste globally. Join our mission to create a sustainable future.",
-    category: "Technology",
-    website: "https://ecotech.example.com",
+    category: "Sustainable Energy",
+    website: "https://eco-charge.io",
+    companyName: "EcoCharge Inc.",
     thumbnailUrl: "/thumbnails/eco_tech.png",
     videoUrl: "",
     goalAmount: 100000,
@@ -77,8 +79,9 @@ export const mockCampaigns: Campaign[] = [
     title: "NextGen Gaming Console",
     shortDescription: "A decentralized gaming console powered by Web3.",
     longDescription: "Our console integrates seamlessly with blockchain, allowing players to truly own their in-game assets. Support us to bring true ownership to gaming.",
-    category: "Gaming",
-    website: "https://nextgen.finance",
+    category: "AI & Machine Learning",
+    website: "https://neuralbridge.ai",
+    companyName: "NeuralBridge Tech",
     thumbnailUrl: "/thumbnails/gaming_console.png",
     videoUrl: "https://www.youtube.com/watch?v=G6aUE2OQWZs",
     goalAmount: 1000000,
