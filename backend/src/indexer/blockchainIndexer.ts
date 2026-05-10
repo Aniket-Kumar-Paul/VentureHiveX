@@ -183,11 +183,29 @@ export const startIndexer = () => {
       const campaignRecord = await prisma.campaign.findUnique({ where: { campaign_id: campaignId.toString() } });
       const currentTokenAddress = campaignRecord?.tokenAddress || '';
 
+      const amountRaisedBig = BigInt(campaignData.amountRaised.toString());
+      const goalAmountBig = BigInt(campaignRecord?.goalAmount || '0');
+      const now = new Date();
+      
+      let newStatus = campaignRecord?.status || 'ACTIVE';
+      if (amountRaisedBig >= goalAmountBig) {
+          newStatus = 'FUNDED';
+      } else if (campaignRecord) {
+          if (now < campaignRecord.startTime) {
+              newStatus = 'UPCOMING';
+          } else if (now >= campaignRecord.startTime && now <= campaignRecord.endTime) {
+              newStatus = 'ACTIVE';
+          } else {
+              newStatus = 'FAILED';
+          }
+      }
+
       await prisma.campaign.update({
         where: { campaign_id: campaignId.toString() },
         data: {
           amountRaised: campaignData.amountRaised.toString(),
-          mintedSupply: currentTokenAddress ? (await fetchTokenSupply(currentTokenAddress, provider)).toString() : "0" // If you need exact supply
+          mintedSupply: currentTokenAddress ? (await fetchTokenSupply(currentTokenAddress, provider)).toString() : "0",
+          status: newStatus
         }
       });
 
@@ -297,11 +315,29 @@ export const startIndexer = () => {
       const campaignRecord = await prisma.campaign.findUnique({ where: { campaign_id: campaignId.toString() } });
       const currentTokenAddress = campaignRecord?.tokenAddress || '';
 
+      const amountRaisedBig = BigInt(campaignData.amountRaised.toString());
+      const goalAmountBig = BigInt(campaignRecord?.goalAmount || '0');
+      const now = new Date();
+      
+      let newStatus = campaignRecord?.status || 'ACTIVE';
+      if (amountRaisedBig >= goalAmountBig) {
+          newStatus = 'FUNDED';
+      } else if (campaignRecord) {
+          if (now < campaignRecord.startTime) {
+              newStatus = 'UPCOMING';
+          } else if (now >= campaignRecord.startTime && now <= campaignRecord.endTime) {
+              newStatus = 'ACTIVE';
+          } else {
+              newStatus = 'FAILED';
+          }
+      }
+
       await prisma.campaign.update({
         where: { campaign_id: campaignId.toString() },
         data: {
           amountRaised: campaignData.amountRaised.toString(),
-          mintedSupply: currentTokenAddress ? (await fetchTokenSupply(currentTokenAddress, provider)).toString() : "0" // If you need exact supply
+          mintedSupply: currentTokenAddress ? (await fetchTokenSupply(currentTokenAddress, provider)).toString() : "0",
+          status: newStatus
         }
       });
     } catch (error) {
