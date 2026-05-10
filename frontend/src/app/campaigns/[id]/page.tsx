@@ -21,7 +21,7 @@ export default function SingleCampaignPage() {
   const [timeLeft, setTimeLeft] = useState("");
 
   useEffect(() => {
-    if (campaign && campaign.status === "Upcoming") {
+    if (campaign && campaign.status?.toUpperCase() === "UPCOMING") {
       const interval = setInterval(() => {
         const diff = new Date(campaign.startDate).getTime() - Date.now();
         if (diff <= 0) {
@@ -109,20 +109,20 @@ export default function SingleCampaignPage() {
                 </div>
               ) : isInvestor ? (
                 <div className="flex flex-col gap-3">
-                  {campaign.status === "Upcoming" && (
+                  {campaign.status?.toUpperCase() === "UPCOMING" && (
                     <Button disabled className="w-full" size="lg">Starts in: {timeLeft}</Button>
                   )}
-                  {campaign.status === "Active" && (
+                  {campaign.status?.toUpperCase() === "ACTIVE" && (
                     <Button onClick={() => setIsBuyModalOpen(true)} className="w-full shadow-[0_0_20px_rgba(var(--primary),0.4)] hover:scale-[1.02] transition-transform" size="lg">
                       Buy Tokens
                     </Button>
                   )}
-                  {campaign.status === "Funded" && (
+                  {campaign.status?.toUpperCase() === "FUNDED" && (
                     <div className="text-center p-3 animate-pulse text-green-500 font-bold border border-green-500/20 bg-green-500/10 rounded-xl">
                       🎉 Fully Funded!
                     </div>
                   )}
-                  {campaign.status === "Failed" && (
+                  {campaign.status?.toUpperCase() === "FAILED" && (
                     <Button variant="destructive" onClick={handleRefund} className="w-full" size="lg">
                       Refund Tokens
                     </Button>
@@ -130,20 +130,20 @@ export default function SingleCampaignPage() {
                 </div>
               ) : isCreator ? (
                 <div className="flex flex-col gap-3">
-                  {campaign.status === "Upcoming" && (
+                  {campaign.status?.toUpperCase() === "UPCOMING" && (
                     <Button onClick={() => setIsEditModalOpen(true)} variant="outline" className="w-full" size="lg">Edit Campaign</Button>
                   )}
-                  {campaign.status === "Active" && (
+                  {campaign.status?.toUpperCase() === "ACTIVE" && (
                     <div className="text-center p-3 text-primary font-bold border border-primary/20 bg-primary/10 rounded-xl">
                       Campaign is currently active.
                     </div>
                   )}
-                  {campaign.status === "Funded" && (
+                  {campaign.status?.toUpperCase() === "FUNDED" && (
                     <Button onClick={handleWithdraw} className="w-full bg-green-600 hover:bg-green-700 text-white" size="lg">
                       Withdraw Funds (Smart Contract)
                     </Button>
                   )}
-                  {campaign.status === "Failed" && (
+                  {campaign.status?.toUpperCase() === "FAILED" && (
                     <div className="text-center p-3 text-red-500 font-bold border border-red-500/20 bg-red-500/10 rounded-xl">
                       Campaign failed to reach goal.
                     </div>

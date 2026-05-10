@@ -8,11 +8,11 @@ interface CampaignCardProps {
 
 export function CampaignCard({ campaign }: CampaignCardProps) {
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Active": return "bg-green-500/90 text-white border-green-500 shadow-md backdrop-blur-xl";
-      case "Upcoming": return "bg-blue-500/90 text-white border-blue-500 shadow-md backdrop-blur-xl";
-      case "Funded": return "bg-purple-500/90 text-white border-purple-500 shadow-md backdrop-blur-xl";
-      case "Failed": return "bg-red-500/90 text-white border-red-500 shadow-md backdrop-blur-xl";
+    switch (status?.toUpperCase()) {
+      case "ACTIVE": return "bg-green-500/90 text-white border-green-500 shadow-md backdrop-blur-xl";
+      case "UPCOMING": return "bg-blue-500/90 text-white border-blue-500 shadow-md backdrop-blur-xl";
+      case "FUNDED": return "bg-purple-500/90 text-white border-purple-500 shadow-md backdrop-blur-xl";
+      case "FAILED": return "bg-red-500/90 text-white border-red-500 shadow-md backdrop-blur-xl";
       default: return "bg-gray-500/90 text-white border-gray-500 shadow-md backdrop-blur-xl";
     }
   };
