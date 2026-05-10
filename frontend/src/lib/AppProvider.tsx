@@ -410,7 +410,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       });
     } else {
       try {
-        toast.loading("Sending investment transaction...");
+        toast.loading("Sending investment transaction...", { id: "invest" });
         const signer = await getSigner();
         const factory = await getFactoryContract(signer);
         
@@ -422,11 +422,33 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         const amountInvestedWei = ethers.parseEther(amountInvested.toString());
 
         const tx = await factory.invest(campaign.id, tokenAmountWei, { value: amountInvestedWei });
+        toast.loading("Waiting for confirmation...", { id: "invest" });
         await tx.wait();
-        toast.dismiss();
-        toast.success("Investment successful!");
+        
+        toast.loading("Syncing with blockchain indexer...", { id: "invest" });
+        const currentAmountRaised = campaign.amountRaised;
+        let synced = false;
+        
+        for (let i = 0; i < 15; i++) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const freshCampaigns = await fetchRealCampaigns();
+          if (freshCampaigns && Array.isArray(freshCampaigns)) {
+            const updatedCampaign = freshCampaigns.find(c => c.id === campaignId);
+            if (updatedCampaign && updatedCampaign.amountRaised > currentAmountRaised) {
+              setRealCampaigns(freshCampaigns);
+              synced = true;
+              break;
+            }
+          }
+        }
+
+        if (synced) {
+          toast.success("Investment successful and synced!", { id: "invest" });
+        } else {
+          toast.error("Investment successful but sync is delayed. Please refresh later.", { id: "invest" });
+        }
       } catch (error: any) {
-        toast.dismiss();
+        toast.dismiss("invest");
         console.error(error);
         toast.error("Investment failed", { description: error.message });
       }
