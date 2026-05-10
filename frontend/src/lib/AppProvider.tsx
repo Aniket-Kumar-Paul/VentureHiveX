@@ -40,7 +40,7 @@ export const useApp = () => {
 };
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
-  const [mode, setMode] = useState<AppMode>('mock');
+  const [mode, setMode] = useState<AppMode>('real');
   const [isInitializing, setIsInitializing] = useState(true);
   
   // Real State
