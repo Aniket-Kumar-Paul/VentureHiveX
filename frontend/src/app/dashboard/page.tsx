@@ -70,13 +70,15 @@ export default function DashboardPage() {
     .reduce((acc, curr) => {
       const prevTotal = acc.length > 0 ? acc[acc.length - 1].total : 0;
       const d = new Date(curr.dateInvested);
+      const newTotal = prevTotal + curr.amountInvested;
       acc.push({
-        shortDate: d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
+        id: curr.id || Math.random().toString(),
+        timestamp: d.getTime(),
         fullDate: d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }),
-        total: prevTotal + curr.amountInvested
+        total: Number(newTotal.toFixed(6))
       });
       return acc;
-    }, [] as { shortDate: string, fullDate: string, total: number }[]);
+    }, [] as { id: string, timestamp: number, fullDate: string, total: number }[]);
 
   const filteredSummary = investmentSummary.filter(i => categoryFilter === "All" || i.campaign.category === categoryFilter);
 
@@ -204,7 +206,7 @@ export default function DashboardPage() {
                           <td className="px-6 py-4 font-semibold">{c.tokenSymbol}</td>
                           <td className="px-6 py-4">{inv.tokensReceived.toLocaleString()}</td>
                           <td className="px-6 py-4 font-medium">{inv.amountInvested.toLocaleString()} ETH</td>
-                          <td className="px-6 py-4 text-muted-foreground">{new Date(inv.dateInvested).toLocaleDateString()}</td>
+                          <td className="px-6 py-4 text-muted-foreground">{new Date(inv.dateInvested).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</td>
                           <td className="px-6 py-4">
                             <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs font-semibold">
                               {c.status}
@@ -231,14 +233,14 @@ export default function DashboardPage() {
                   {/* Allocation Pie Chart */}
                   <div className="h-[400px] w-full bg-card/40 backdrop-blur-xl rounded-2xl border border-white/10 p-6 shadow-xl ring-1 ring-white/5 flex flex-col items-center">
                     <h3 className="font-semibold text-lg mb-4 text-center">Investment Allocation</h3>
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                       <PieChart>
                         <Pie data={pieData} cx="50%" cy="50%" labelLine={false} label={({ name, percent }: any) => percent !== undefined ? `${name} ${(percent * 100).toFixed(0)}%` : name} outerRadius={100} fill="#8884d8" dataKey="value">
                           {pieData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
-                        <Tooltip contentStyle={{ backgroundColor: 'var(--background)', borderRadius: '8px', border: '1px solid var(--border)' }} itemStyle={{ color: 'var(--foreground)' }} formatter={(value: any) => `${value} ETH`} />
+                        <Tooltip contentStyle={{ backgroundColor: 'var(--background)', borderRadius: '8px', border: '1px solid var(--border)' }} itemStyle={{ color: 'var(--foreground)' }} formatter={(value: any) => `${Number(value).toLocaleString(undefined, { maximumFractionDigits: 4 })} ETH`} />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -246,12 +248,12 @@ export default function DashboardPage() {
                   {/* Growth Line Chart */}
                   <div className="h-[400px] w-full bg-card/40 backdrop-blur-xl rounded-2xl border border-white/10 p-6 shadow-xl ring-1 ring-white/5 flex flex-col items-center">
                     <h3 className="font-semibold text-lg mb-4 text-center">Cumulative Portfolio Value</h3>
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                       <LineChart data={cumulativeData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                        <XAxis dataKey="shortDate" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickMargin={10} minTickGap={20} />
+                        <XAxis tick={false} dataKey="timestamp" type="number" scale="time" domain={['dataMin', 'dataMax']} stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickMargin={10} minTickGap={20} tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} />
                         <YAxis domain={['auto', 'auto']} padding={{ top: 20 }} stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value} ETH`} />
-                        <Tooltip labelFormatter={(label, payload) => payload?.[0]?.payload?.fullDate || label} contentStyle={{ backgroundColor: 'var(--background)', borderRadius: '8px', border: '1px solid var(--border)' }} itemStyle={{ color: 'var(--foreground)' }} />
+                        <Tooltip labelFormatter={(label, payload) => payload?.[0]?.payload?.fullDate || new Date(label).toLocaleString()} contentStyle={{ backgroundColor: 'var(--background)', borderRadius: '8px', border: '1px solid var(--border)' }} itemStyle={{ color: 'var(--foreground)' }} />
                         <Line type="monotone" dataKey="total" stroke="var(--primary)" strokeWidth={3} dot={{ fill: 'var(--primary)', strokeWidth: 2 }} />
                       </LineChart>
                     </ResponsiveContainer>
