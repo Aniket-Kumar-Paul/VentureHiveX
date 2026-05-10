@@ -12,7 +12,7 @@ import { motion } from "framer-motion";
 export default function SingleCampaignPage() {
   const params = useParams();
   const router = useRouter();
-  const { campaigns, currentUser, refundCampaign, withdrawFunds } = useApp();
+  const { campaigns, currentUser, refundCampaign, withdrawFunds, investments } = useApp();
   const id = params?.id as string;
   const campaign = campaigns.find((c) => c.id === id);
 
@@ -53,6 +53,8 @@ export default function SingleCampaignPage() {
 
   const handleRefund = () => refundCampaign(campaign.id);
   const handleWithdraw = () => withdrawFunds(campaign.id);
+  
+  const hasWithdrawn = investments.some(inv => inv.campaignId === campaign.id && inv.type === 'WITHDRAW');
 
   return (
     <div className="container mx-auto px-4 py-8 pt-0">
@@ -139,9 +141,15 @@ export default function SingleCampaignPage() {
                     </div>
                   )}
                   {campaign.status?.toUpperCase() === "FUNDED" && (
-                    <Button onClick={handleWithdraw} className="w-full bg-green-600 hover:bg-green-700 text-white" size="lg">
-                      Withdraw Funds (Smart Contract)
-                    </Button>
+                    hasWithdrawn ? (
+                      <div className="text-center p-3 text-green-500 font-bold border border-green-500/20 bg-green-500/10 rounded-xl">
+                        Funds Successfully Withdrawn
+                      </div>
+                    ) : (
+                      <Button onClick={handleWithdraw} className="w-full bg-green-600 hover:bg-green-700 text-white" size="lg">
+                        Withdraw Funds
+                      </Button>
+                    )
                   )}
                   {campaign.status?.toUpperCase() === "FAILED" && (
                     <div className="text-center p-3 text-red-500 font-bold border border-red-500/20 bg-red-500/10 rounded-xl">
