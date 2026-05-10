@@ -53,38 +53,51 @@ const startJob = (schedule: string) => {
   console.log(`[Cron] Starting campaign status checker with schedule: ${schedule}`);
 
   currentJob = cron.schedule(schedule, async () => {
-    console.log('[Cron] Running scheduled check for expired campaigns...');
+    console.log('[Cron] Running scheduled check for campaign statuses...');
     try {
-      const activeCampaigns = await prisma.campaign.findMany({
+      const activeOrUpcomingCampaigns = await prisma.campaign.findMany({
         where: {
-          status: 'ACTIVE',
-          endTime: {
-            lt: new Date() // endTime has passed
+          status: {
+            notIn: ['FUNDED', 'FAILED']
           }
         }
       });
 
-      if (activeCampaigns.length === 0) {
-        console.log('[Cron] No expired active campaigns found.');
+      if (activeOrUpcomingCampaigns.length === 0) {
+        console.log('[Cron] No active or upcoming campaigns to check.');
         return;
       }
 
-      console.log(`[Cron] Found ${activeCampaigns.length} expired campaigns. Updating statuses...`);
+      let updateCount = 0;
 
-      for (const campaign of activeCampaigns) {
-        // Evaluate if goal was met
-        const amountRaised = BigInt(campaign.amountRaised);
-        const goalAmount = BigInt(campaign.goalAmount);
+      for (const campaign of activeOrUpcomingCampaigns) {
+        const amountRaised = BigInt(campaign.amountRaised || '0');
+        const goalAmount = BigInt(campaign.goalAmount || '0');
+        const now = new Date();
         
-        const newStatus = amountRaised >= goalAmount ? 'FUNDED' : 'FAILED';
+        let newStatus = campaign.status;
 
-        await prisma.campaign.update({
-          where: { campaign_id: campaign.campaign_id },
-          data: { status: newStatus }
-        });
+        if (amountRaised >= goalAmount) {
+            newStatus = 'FUNDED';
+        } else if (now < campaign.startTime) {
+            newStatus = 'UPCOMING';
+        } else if (now >= campaign.startTime && now <= campaign.endTime) {
+            newStatus = 'ACTIVE';
+        } else {
+            newStatus = 'FAILED';
+        }
 
-        console.log(`[Cron] Campaign ${campaign.campaign_id} status updated to ${newStatus}`);
+        if (newStatus !== campaign.status) {
+           await prisma.campaign.update({
+             where: { campaign_id: campaign.campaign_id },
+             data: { status: newStatus }
+           });
+           console.log(`[Cron] Campaign ${campaign.campaign_id} status updated from ${campaign.status} to ${newStatus}`);
+           updateCount++;
+        }
       }
+      
+      console.log(`[Cron] Status check complete. Updated ${updateCount} campaigns.`);
 
     } catch (error) {
       console.error('[Cron] Error executing scheduled job:', error);
