@@ -66,7 +66,7 @@ export default function SingleCampaignPage() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col lg:flex-row gap-8 items-start">
         
         {/* Left Section (Smaller): Stats and Actions */}
-        <div className="lg:w-1/3 order-2 lg:order-1 flex flex-col gap-6 lg:sticky lg:top-24">
+        <div className="w-full lg:w-1/3 order-2 lg:order-1 flex flex-col gap-6 lg:sticky lg:top-24">
           <div className="bg-card border border-border rounded-3xl p-6 shadow-xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-purple-500" />
             <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-4">Investment Goal</h3>
@@ -193,7 +193,7 @@ export default function SingleCampaignPage() {
         </div>
 
         {/* Right Section (Bigger): Details */}
-        <div className="lg:w-2/3 order-1 lg:order-2 flex flex-col gap-8">
+        <div className="w-full lg:w-2/3 order-1 lg:order-2 flex flex-col gap-8">
           <div>
             <div className="flex items-center gap-3 mb-3">
               <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold tracking-wide">

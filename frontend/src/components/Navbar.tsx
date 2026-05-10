@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import { WalletConnectModal } from "./WalletConnectModal";
 import { useState } from "react";
 import { useApp } from "@/lib/AppProvider";
-import { User as UserIcon } from "lucide-react";
+import { User as UserIcon, LogOut, Menu } from "lucide-react";
 import { SignupModal } from "./modals/SignupModal";
 import { ProfileModal } from "./modals/ProfileModal";
 import { Logo } from "./Logo";
@@ -22,7 +22,7 @@ export function Navbar() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-6">
           <Logo />
-          <div className="flex gap-4">
+          <div className="hidden md:flex gap-4">
             <Link href="/campaigns" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Campaigns
             </Link>
@@ -31,6 +31,21 @@ export function Navbar() {
                 Dashboard
               </Link>
             )}
+          </div>
+          
+          {/* Mobile Menu */}
+          <div className="md:hidden group relative flex items-center justify-center p-2 rounded-md hover:bg-muted/50 cursor-pointer">
+            <Menu className="size-5 text-foreground" />
+            <div className="absolute left-0 top-12 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-left scale-95 group-hover:scale-100 bg-card border border-border rounded-xl shadow-2xl p-2 w-48 z-50 flex flex-col gap-1 cursor-default">
+              <Link href="/campaigns" className="text-sm font-medium p-3 hover:bg-muted rounded-md transition-colors">
+                Campaigns
+              </Link>
+              {currentUser && (
+                <Link href="/dashboard" className="text-sm font-medium p-3 hover:bg-muted rounded-md transition-colors">
+                  Dashboard
+                </Link>
+              )}
+            </div>
           </div>
         </div>
         
@@ -62,8 +77,9 @@ export function Navbar() {
                   <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => setIsProfileModalOpen(true)}>Edit Profile</Button>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" onClick={disconnectWallet}>
-                Disconnect
+              <Button variant="ghost" size="sm" onClick={disconnectWallet} className="px-2 sm:px-3">
+                <LogOut className="size-4 sm:mr-2" />
+                <span className="hidden sm:inline">Disconnect</span>
               </Button>
             </div>
           ) : (

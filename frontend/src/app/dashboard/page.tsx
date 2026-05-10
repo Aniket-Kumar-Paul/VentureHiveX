@@ -69,12 +69,14 @@ export default function DashboardPage() {
     .sort((a, b) => new Date(a.dateInvested).getTime() - new Date(b.dateInvested).getTime())
     .reduce((acc, curr) => {
       const prevTotal = acc.length > 0 ? acc[acc.length - 1].total : 0;
+      const d = new Date(curr.dateInvested);
       acc.push({
-        date: new Date(curr.dateInvested).toLocaleDateString(),
+        shortDate: d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
+        fullDate: d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }),
         total: prevTotal + curr.amountInvested
       });
       return acc;
-    }, [] as { date: string, total: number }[]);
+    }, [] as { shortDate: string, fullDate: string, total: number }[]);
 
   const filteredSummary = investmentSummary.filter(i => categoryFilter === "All" || i.campaign.category === categoryFilter);
 
@@ -247,9 +249,9 @@ export default function DashboardPage() {
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={cumulativeData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                        <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value} ETH`} />
-                        <Tooltip contentStyle={{ backgroundColor: 'var(--background)', borderRadius: '8px', border: '1px solid var(--border)' }} itemStyle={{ color: 'var(--foreground)' }} />
+                        <XAxis dataKey="shortDate" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickMargin={10} minTickGap={20} />
+                        <YAxis domain={['auto', 'auto']} padding={{ top: 20 }} stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value} ETH`} />
+                        <Tooltip labelFormatter={(label, payload) => payload?.[0]?.payload?.fullDate || label} contentStyle={{ backgroundColor: 'var(--background)', borderRadius: '8px', border: '1px solid var(--border)' }} itemStyle={{ color: 'var(--foreground)' }} />
                         <Line type="monotone" dataKey="total" stroke="var(--primary)" strokeWidth={3} dot={{ fill: 'var(--primary)', strokeWidth: 2 }} />
                       </LineChart>
                     </ResponsiveContainer>
