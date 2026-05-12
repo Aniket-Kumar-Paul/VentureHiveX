@@ -23,9 +23,11 @@ export function BuyTokensModal({ isOpen, onClose, campaignId }: Props) {
   const numTokens = parseFloat(tokenAmount) || 0;
   const totalPrice = numTokens * campaign.pricePerToken;
 
+  const availableTokens = campaign.totalTokenSupply - (campaign.amountRaised / campaign.pricePerToken);
+
   const handleInvest = (e: React.FormEvent) => {
     e.preventDefault();
-    if (totalPrice <= 0) return;
+    if (totalPrice <= 0 || numTokens > availableTokens) return;
     investInCampaign(campaignId, totalPrice);
     onClose();
   };
@@ -56,7 +58,7 @@ export function BuyTokensModal({ isOpen, onClose, campaignId }: Props) {
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Available Tokens</span>
               <span className="font-semibold">
-                {(campaign.totalTokenSupply - (campaign.amountRaised / campaign.pricePerToken)).toLocaleString()}
+                {availableTokens.toLocaleString()}
               </span>
             </div>
           </div>
@@ -69,6 +71,7 @@ export function BuyTokensModal({ isOpen, onClose, campaignId }: Props) {
                   id="tokens" 
                   type="number" 
                   min="1"
+                  max={availableTokens}
                   step="1"
                   required 
                   className="pr-16 text-lg py-6 font-medium"
@@ -88,7 +91,7 @@ export function BuyTokensModal({ isOpen, onClose, campaignId }: Props) {
             </div>
           </div>
           
-            <Button type="submit" size="lg" className="w-full text-lg shadow-[0_0_20px_rgba(var(--primary),0.3)]">
+            <Button type="submit" disabled={numTokens > availableTokens || numTokens <= 0} size="lg" className="w-full text-lg shadow-[0_0_20px_rgba(var(--primary),0.3)]">
               Confirm Investment
             </Button>
           </form>

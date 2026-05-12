@@ -156,6 +156,30 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     };
     autoConnect();
   }, []);
+  // Mock Indexer: Automatically update campaign statuses based on time
+  useEffect(() => {
+    if (mode === 'mock') {
+      const interval = setInterval(() => {
+        setMockCampaigns(prev => {
+          let changed = false;
+          const now = new Date();
+          const next = prev.map(c => {
+            let newStatus = c.status;
+            if (c.status === "Upcoming" && new Date(c.startDate) <= now) {
+              newStatus = "Active";
+              changed = true;
+            } else if (c.status === "Active" && new Date(c.endDate) <= now) {
+              newStatus = c.amountRaised >= c.goalAmount ? "Funded" : "Failed";
+              changed = true;
+            }
+            return newStatus !== c.status ? { ...c, status: newStatus as any } : c;
+          });
+          return changed ? next : prev;
+        });
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [mode]);
 
   const connectMockWallet = (address: string) => {
     setMode('mock');
@@ -429,9 +453,14 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
       setMockInvestments(prev => [...prev, newInvestment]);
       
-      setMockCampaigns(prev => prev.map(c => 
-        c.id === campaignId ? { ...c, amountRaised: c.amountRaised + amountInvested } : c
-      ));
+      setMockCampaigns(prev => prev.map(c => {
+        if (c.id === campaignId) {
+          const newAmountRaised = c.amountRaised + amountInvested;
+          const newStatus = newAmountRaised >= c.goalAmount ? "Funded" : c.status;
+          return { ...c, amountRaised: newAmountRaised, status: newStatus };
+        }
+        return c;
+      }));
 
       toast.success(`Successfully invested $${amountInvested} (Mock)!`, {
         description: `You received ${tokensReceived} ${campaign.tokenSymbol}`

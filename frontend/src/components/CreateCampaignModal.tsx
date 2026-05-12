@@ -92,6 +92,11 @@ export function CreateCampaignModal({ isOpen, onClose }: Props) {
       }
       const sDate = new Date(startDate);
       const eDate = new Date(endDate);
+      const now = new Date();
+      if (sDate.getTime() <= now.getTime() + 60000) {
+        toast.error("Start date must be at least 1 minute in the future.");
+        return;
+      }
       if (eDate <= sDate) {
         toast.error("End date must be after start date.");
         return;
