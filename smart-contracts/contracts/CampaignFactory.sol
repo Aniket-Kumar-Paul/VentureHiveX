@@ -145,7 +145,8 @@ contract CampaignFactory is ReentrancyGuard {
 
         // Refund excess if any
         if (msg.value > cost) {
-            payable(msg.sender).transfer(msg.value - cost);
+            (bool success, ) = payable(msg.sender).call{value: msg.value - cost}("");
+            require(success, "Result: Refund excess failed");
         }
 
         c.amountRaised += cost;
@@ -168,7 +169,8 @@ contract CampaignFactory is ReentrancyGuard {
         require(amount > 0, "Result: Nothing to withdraw");
         
         c.amountRaised = 0; // Prevent re-entrancy attack vector (though unlikely with nonReentrant)
-        payable(msg.sender).transfer(amount);
+        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        require(success, "Result: Withdraw transfer failed");
         
         emit FundsWithdrawn(campaignId, msg.sender, amount);
     }
@@ -190,7 +192,8 @@ contract CampaignFactory is ReentrancyGuard {
          // Burn tokens from investor
          CampaignToken(c.tokenAddress).burn(msg.sender, tokens);
          
-         payable(msg.sender).transfer(amount);
+         (bool success, ) = payable(msg.sender).call{value: amount}("");
+         require(success, "Result: Refund transfer failed");
          
          emit Refunded(campaignId, msg.sender, amount, tokens);
     }
