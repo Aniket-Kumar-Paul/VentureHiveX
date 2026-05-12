@@ -67,7 +67,7 @@ export default function DashboardPage() {
     return {
       name: c?.tokenSymbol || "Unknown",
       amount: inv.amountInvested,
-      date: new Date(inv.dateInvested).toLocaleDateString()
+      date: new Date(inv.dateInvested).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     };
   });
 
@@ -85,7 +85,7 @@ export default function DashboardPage() {
       acc.push({
         id: curr.id || Math.random().toString(),
         timestamp: d.getTime(),
-        fullDate: d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }),
+        fullDate: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
         total: Number(newTotal.toFixed(6))
       });
       return acc;
@@ -295,7 +295,7 @@ export default function DashboardPage() {
                           <td className="px-6 py-4 font-semibold">{c.tokenSymbol}</td>
                           <td className="px-6 py-4">{item.tokensReceived.toLocaleString()}</td>
                           <td className="px-6 py-4 font-medium">{item.amountInvested.toLocaleString()} ETH</td>
-                          <td className="px-6 py-4 text-muted-foreground">{new Date(item.dateInvested).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</td>
+                          <td className="px-6 py-4 text-muted-foreground">{new Date(item.dateInvested).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</td>
                           <td className="px-6 py-4">
                             <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
                               (item.type || 'INVEST') === 'INVEST' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' : 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
@@ -349,7 +349,7 @@ export default function DashboardPage() {
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                         <XAxis tick={false} dataKey="timestamp" type="number" scale="time" domain={['dataMin', 'dataMax']} stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickMargin={10} minTickGap={20} tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} />
                         <YAxis domain={['auto', 'auto']} padding={{ top: 20 }} stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value} ETH`} />
-                        <Tooltip labelFormatter={(label, payload) => payload?.[0]?.payload?.fullDate || new Date(label).toLocaleString()} contentStyle={{ backgroundColor: 'var(--background)', borderRadius: '8px', border: '1px solid var(--border)' }} itemStyle={{ color: 'var(--foreground)' }} />
+                        <Tooltip labelFormatter={(label, payload) => payload?.[0]?.payload?.fullDate || new Date(label).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} contentStyle={{ backgroundColor: 'var(--background)', borderRadius: '8px', border: '1px solid var(--border)' }} itemStyle={{ color: 'var(--foreground)' }} />
                         <Line type="monotone" dataKey="total" stroke="var(--primary)" strokeWidth={3} dot={{ fill: 'var(--primary)', strokeWidth: 2 }} />
                       </LineChart>
                     </ResponsiveContainer>
