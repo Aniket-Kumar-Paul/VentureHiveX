@@ -505,6 +505,16 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     if (!currentUser) return;
     
     if (mode === 'mock') {
+      const newInvestment: Investment = {
+        id: `ref-${Date.now()}`,
+        investorAddress: currentUser.address,
+        campaignId,
+        amountInvested: -1, // Mock deduction
+        tokensReceived: -1, 
+        dateInvested: new Date().toISOString(),
+        type: 'REFUND'
+      };
+      setMockInvestments(prev => [...prev, newInvestment]);
       toast.success("Successfully refunded! (Mock)");
     } else {
       try {
@@ -567,6 +577,16 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     if (!currentUser) return;
     
     if (mode === 'mock') {
+      const newInvestment: Investment = {
+        id: `wth-${Date.now()}`,
+        investorAddress: currentUser.address,
+        campaignId,
+        amountInvested: 0, 
+        tokensReceived: 0, 
+        dateInvested: new Date().toISOString(),
+        type: 'WITHDRAW'
+      };
+      setMockInvestments(prev => [...prev, newInvestment]);
       toast.success("Successfully withdrawn funds! (Mock)");
     } else {
       try {
