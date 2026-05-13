@@ -202,11 +202,11 @@ export function CreateCampaignModal({ isOpen, onClose }: Props) {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Start Date & Time *</Label>
+                    <Label>Start Date & Time (IST) *</Label>
                     <Input type="datetime-local" required value={startDate} onChange={e => setStartDate(e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>End Date & Time *</Label>
+                    <Label>End Date & Time (IST) *</Label>
                     <Input type="datetime-local" required value={endDate} onChange={e => setEndDate(e.target.value)} />
                   </div>
                 </div>

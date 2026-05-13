@@ -77,7 +77,7 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
         {/* Footer info */}
         <div className="mt-2 flex items-center justify-between border-t border-border pt-3 text-xs font-medium text-muted-foreground">
           <span>{campaign.tokenSymbol} @ {campaign.pricePerToken} ETH</span>
-          <span>{new Date(campaign.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+          <span>{new Date(campaign.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' })} (IST)</span>
         </div>
       </div>
     </Link>

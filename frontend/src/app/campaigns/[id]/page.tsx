@@ -88,11 +88,11 @@ export default function SingleCampaignPage() {
             <div className="mt-8 space-y-3 text-sm">
               <div className="flex justify-between py-2 border-b border-border/50">
                 <span className="text-muted-foreground">Start Date & Time</span>
-                <span className="font-semibold">{new Date(campaign.startDate).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</span>
+                <span className="font-semibold">{new Date(campaign.startDate).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })} (IST)</span>
               </div>
               <div className="flex justify-between py-2 border-b border-border/50">
                 <span className="text-muted-foreground">End Date & Time</span>
-                <span className="font-semibold">{new Date(campaign.endDate).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</span>
+                <span className="font-semibold">{new Date(campaign.endDate).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })} (IST)</span>
               </div>
               <div className="flex justify-between py-2 border-b border-border/50">
                 <span className="text-muted-foreground">Token Symbol</span>
