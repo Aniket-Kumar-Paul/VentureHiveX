@@ -65,39 +65,46 @@ const startJob = (schedule: string) => {
 
       if (activeOrUpcomingCampaigns.length === 0) {
         console.log('[Cron] No active or upcoming campaigns to check.');
-        return;
-      }
+      } else {
+        let updateCount = 0;
 
-      let updateCount = 0;
+        for (const campaign of activeOrUpcomingCampaigns) {
+          const amountRaised = BigInt(campaign.amountRaised || '0');
+          const goalAmount = BigInt(campaign.goalAmount || '0');
+          const now = new Date();
+          
+          let newStatus = campaign.status;
 
-      for (const campaign of activeOrUpcomingCampaigns) {
-        const amountRaised = BigInt(campaign.amountRaised || '0');
-        const goalAmount = BigInt(campaign.goalAmount || '0');
-        const now = new Date();
+          if (amountRaised >= goalAmount) {
+              newStatus = 'FUNDED';
+          } else if (now < campaign.startTime) {
+              newStatus = 'UPCOMING';
+          } else if (now >= campaign.startTime && now <= campaign.endTime) {
+              newStatus = 'ACTIVE';
+          } else {
+              newStatus = 'FAILED';
+          }
+
+          if (newStatus !== campaign.status) {
+             await prisma.campaign.update({
+               where: { campaign_id: campaign.campaign_id },
+               data: { status: newStatus }
+             });
+             console.log(`[Cron] Campaign ${campaign.campaign_id} status updated from ${campaign.status} to ${newStatus}`);
+             updateCount++;
+          }
+        }
         
-        let newStatus = campaign.status;
-
-        if (amountRaised >= goalAmount) {
-            newStatus = 'FUNDED';
-        } else if (now < campaign.startTime) {
-            newStatus = 'UPCOMING';
-        } else if (now >= campaign.startTime && now <= campaign.endTime) {
-            newStatus = 'ACTIVE';
-        } else {
-            newStatus = 'FAILED';
-        }
-
-        if (newStatus !== campaign.status) {
-           await prisma.campaign.update({
-             where: { campaign_id: campaign.campaign_id },
-             data: { status: newStatus }
-           });
-           console.log(`[Cron] Campaign ${campaign.campaign_id} status updated from ${campaign.status} to ${newStatus}`);
-           updateCount++;
-        }
+        console.log(`[Cron] Status check complete. Updated ${updateCount} campaigns.`);
       }
-      
-      console.log(`[Cron] Status check complete. Updated ${updateCount} campaigns.`);
+
+      // Persist last sync time for frontend monitoring
+      const nowIso = new Date().toISOString();
+      await prisma.configuration.upsert({
+        where: { key: 'LAST_SYNC_TIME' },
+        update: { value: nowIso },
+        create: { key: 'LAST_SYNC_TIME', value: nowIso }
+      });
 
     } catch (error) {
       console.error('[Cron] Error executing scheduled job:', error);

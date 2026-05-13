@@ -1,16 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useApp } from "@/lib/AppProvider";
 import { CampaignCard } from "@/components/CampaignCard";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
+import { formatDistanceToNow } from "date-fns";
+import { RefreshCcw } from "lucide-react";
 
 export default function CampaignsPage() {
   const { campaigns } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [sortOrder, setSortOrder] = useState("Recent");
+  const [syncStatus, setSyncStatus] = useState<{ lastSyncTime: string | null; intervalMinutes: number } | null>(null);
+
+  useEffect(() => {
+    const fetchSyncStatus = async () => {
+      try {
+        const url = process.env.NEXT_PUBLIC_API_URL || '/api';
+        const res = await fetch(`${url}/campaigns/sync-status`);
+        if (res.ok) {
+          const data = await res.json();
+          setSyncStatus(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch sync status:", error);
+      }
+    };
+    fetchSyncStatus();
+  }, []);
 
   const filtered = campaigns
     .filter(c => c.title.toLowerCase().includes(searchTerm.toLowerCase()) || c.category.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -32,6 +51,16 @@ export default function CampaignsPage() {
         <div>
           <h1 className="text-4xl font-extrabold tracking-tight">Active Campaigns</h1>
           <p className="text-muted-foreground mt-2">Discover and invest in the next big thing.</p>
+          
+          {syncStatus && (
+            <div className="flex items-center text-xs text-muted-foreground mt-4 gap-1.5 font-medium bg-muted/50 w-fit px-3 py-1.5 rounded-full border border-border/50">
+              <RefreshCcw className="w-3.5 h-3.5 animate-in spin-in" />
+              <span>
+                Status synced {syncStatus.lastSyncTime ? `${formatDistanceToNow(new Date(syncStatus.lastSyncTime))} ago` : 'recently'} 
+                <span className="opacity-70 ml-1">(Updates every {syncStatus.intervalMinutes} mins)</span>
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-3 items-center">

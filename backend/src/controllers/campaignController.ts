@@ -79,3 +79,23 @@ export const getCampaignById = async (req: Request, res: Response): Promise<void
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const getSyncStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const cronConfig = await prisma.configuration.findUnique({
+      where: { key: 'CRON_SCHEDULE_MINUTES' }
+    });
+    
+    const lastSyncConfig = await prisma.configuration.findUnique({
+      where: { key: 'LAST_SYNC_TIME' }
+    });
+
+    res.json({
+      intervalMinutes: cronConfig ? parseInt(cronConfig.value, 10) : 60,
+      lastSyncTime: lastSyncConfig ? lastSyncConfig.value : null
+    });
+  } catch (error) {
+    console.error('Error fetching sync status:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
